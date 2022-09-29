@@ -12,11 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Ctrl + Shift + H: Set Working Directory
 
-
-WG Initializiation
-```
-setwd("~/Desktop/Statistical-Programming-2022")
-a <- scan("/Users/willgraham/Desktop/Edinburgh Downloads/pg10.txt",what="character",skip=104) ## skip contents
+```{r}
+a <- scan("pg10.txt",what="character",skip=104) ## skip contents
 n <- length(a)
 a <- a[-((n-2886):n)] ## strip license
 a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
@@ -28,9 +25,10 @@ n <- length(a)
 a <- a[-((n-2886):n)] ## strip license
 a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
 ```
-Step 4
+
 ```{r}
-split_punct <- function()
+#split_punct <- function(){
+
+#}
 ```
 
->>>>>>> 1dff9f3f934d4e20c449a9bf94207bc8b6b201e7
