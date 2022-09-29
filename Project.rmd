@@ -17,6 +17,16 @@ n <- length(a)
 a <- a[-((n-2886):n)] ## strip license
 a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
 ```
+
+WG Initializiation
+```
+setwd("~/Desktop/Statistical-Programming-2022")
+a <- scan("/Users/willgraham/Desktop/Edinburgh Downloads/pg10.txt",what="character",skip=104) ## skip contents
+n <- length(a)
+a <- a[-((n-2886):n)] ## strip license
+a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
+```
+
 Step 4
 ```{r}
 split_punct <- function()
