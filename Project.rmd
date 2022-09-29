@@ -9,8 +9,16 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Ctrl + Shift + H: Set Working Directory
 
-```{r cars}
-
+```{r}
+a <- scan("pg10.txt",what="character",skip=104) ## skip contents
+n <- length(a)
+a <- a[-((n-2886):n)] ## strip license
+a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
+```
+Step 4
+```{r}
+split_punct <- function()
 ```
 
