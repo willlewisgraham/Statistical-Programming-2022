@@ -1,6 +1,6 @@
 
 ---
-title: "Project"
+title: "Project 1"
 author: "Will Graham; Richelle Lee; Robin Lin"
 date: '2022-09-29'
 output: word_document
