@@ -23,7 +23,7 @@ A Function Splitting Punctuation Marks
 ```{r}
 split_punct <- function(string){
   ## Separating words with punctuation marks
-  indexes <- grep("[^a-z ^A-Z]",a) ## Obtaining the indexes of words containing non-letter characters 
+  indexes <- grep("[^a-z ^A-Z]",a) ## obtain the indexes of words containing non-letter characters 
   
   ## ... 
 }
