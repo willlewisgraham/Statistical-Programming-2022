@@ -55,11 +55,26 @@ split_punct <- function(b, test){
 
 ```{r}
 #Lowering capitals
-new_b <- split_punct(a,TRUE)
+new_b <- split_punct(a, TRUE)
 lower_new_b <- tolower(new_b)
 unique_words <- unique(lower_new_b)
-index_match <- match(lower_new_b,unique_words)
+index_match <- match(lower_new_b, unique_words)
 tabulate_index_match <- tabulate(index_match)
 sort_results <- sort(tabulate_index_match, index.return = TRUE, decreasing = TRUE)
+top_500 <- sort_results$ix[1 : 10]
+result_list <- unique_words[top_500]
+```
+
+```{r}
+common_word_match <- match(lower_new_b, result_list)
+first_column <- common_word_match[1 : (length(common_word_match) - 2)]
+second_column <- first_column[2 : (length(common_word_match) - 1)]
+third_column <- first_column[3 : length(common_word_match)]
+T_array <- cbind(first_column, second_column, third_column)
+print(T_array)
+rowSums(T_array)
+
+T_array <- T_array[rowSums(T_array) |> is.na() == FALSE]
+print(result_list[T_array[rowSums(T_array) |> is.na() == FALSE]])
 
 ```
