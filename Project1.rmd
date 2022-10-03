@@ -1,4 +1,3 @@
-
 ---
 title: "Project 1"
 author: "Will Graham; Richelle Lee; Robin Lin"
@@ -17,9 +16,12 @@ a <- scan("pg10.txt",what="character",skip=104) ## skip contents
 n <- length(a)
 a <- a[-((n-2886):n)] ## strip license
 a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
+
+# a <- a[1:100] # test
 ```
 
-A Function Splitting Punctuation Marks 
+A Function Splitting Punctuation Marks
+
 ```{r}
 indexes_split_punct <- function(string){
   ## Separating words with punctuation marks
@@ -27,40 +29,26 @@ indexes_split_punct <- function(string){
   return(indexes)
 }
 
-split_punct <- function(fun = indexes_split_punct, ...){
-  punct_indexes <- fun(a)
-  punct <- a[punct_indexes]
-  new_a <- c(1:(length(a) + length(punct)))
+split_punct <- function(b){
+  punct_indexes <- indexes_split_punct(b)
+  punct <- b[punct_indexes]
+  new_b <- c(1:(length(b) + length(punct)))
   tracker <- 0
 
-  for (i in c(1:length(a))) {
-    if (a[i] %in% punct) {
-      new_a[i+tracker] <- substr(a[i], 1, nchar(a[i]) - 1)
-      new_a[i + tracker + 1] <- substr(a[i], nchar(a[i]), nchar(a[i]))
+  for (i in c(1:length(b))) {
+    if (b[i] %in% punct) {
+      new_b[i+tracker] <- substr(b[i], 1, nchar(b[i]) - 1)
+      new_b[i + tracker + 1] <- substr(b[i], nchar(b[i]), nchar(b[i]))
       tracker <- tracker + 1
-    } else {new_a[i + tracker] <- a[i]}
+    } else {new_b[i + tracker] <- b[i]}
   }
-  return(new_a)
+  return(new_b)
 }
 
 
 ```
-
 
 ```{r}
 
-punct_indexes <- split_punct(a)
-punct <- a[punct_indexes]
-new_a <- c(1:(length(a) + length(punct)))
-tracker <- 0
 
-for (i in c(1:length(a))) {
-  if (a[i] %in% punct) {
-    new_a[i+tracker] <- substr(a[i], 1, nchar(a[i]) - 1)
-    new_a[i + tracker + 1] <- substr(a[i], nchar(a[i]), nchar(a[i]))
-    tracker <- tracker + 1
-  } else {new_a[i + tracker] <- a[i]}
-}
 ```
-
-
