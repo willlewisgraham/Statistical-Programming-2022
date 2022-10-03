@@ -71,10 +71,8 @@ first_column <- common_word_match[1 : (length(common_word_match) - 2)]
 second_column <- first_column[2 : (length(common_word_match) - 1)]
 third_column <- first_column[3 : length(common_word_match)]
 T_array <- cbind(first_column, second_column, third_column)
-print(T_array)
-rowSums(T_array)
 
-T_array <- T_array[rowSums(T_array) |> is.na() == FALSE]
-print(result_list[T_array[rowSums(T_array) |> is.na() == FALSE]])
+T_array <- T_array[which(rowSums(T_array) |> is.na() == FALSE),]
+print(result_list[T_array])
 
 ```
