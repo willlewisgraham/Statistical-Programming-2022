@@ -58,5 +58,6 @@ split_punct <- function(b, test){
 new_b <- split_punct(a,TRUE)
 lower_new_b <- tolower(new_b)
 unique_words <- unique(lower_new_b)
+match()
 
 ```
