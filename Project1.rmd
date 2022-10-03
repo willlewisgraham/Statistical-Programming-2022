@@ -21,17 +21,34 @@ a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
 
 A Function Splitting Punctuation Marks 
 ```{r}
-split_punct <- function(string){
+indexes_split_punct <- function(string){
   ## Separating words with punctuation marks
   indexes <- grep("[^a-z ^A-Z]",a) ## obtain the indexes of words containing non-letter characters 
   return(indexes)
-  ## ... 
 }
+
+split_punct <- function(fun = indexes_split_punct, ...){
+  punct_indexes <- fun(a)
+  punct <- a[punct_indexes]
+  new_a <- c(1:(length(a) + length(punct)))
+  tracker <- 0
+
+  for (i in c(1:length(a))) {
+    if (a[i] %in% punct) {
+      new_a[i+tracker] <- substr(a[i], 1, nchar(a[i]) - 1)
+      new_a[i + tracker + 1] <- substr(a[i], nchar(a[i]), nchar(a[i]))
+      tracker <- tracker + 1
+    } else {new_a[i + tracker] <- a[i]}
+  }
+  return(new_a)
+}
+
+
 ```
 
 
 ```{r}
-a <- a[1:100]
+
 punct_indexes <- split_punct(a)
 punct <- a[punct_indexes]
 new_a <- c(1:(length(a) + length(punct)))
