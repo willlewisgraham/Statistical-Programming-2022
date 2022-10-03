@@ -58,6 +58,8 @@ split_punct <- function(b, test){
 new_b <- split_punct(a,TRUE)
 lower_new_b <- tolower(new_b)
 unique_words <- unique(lower_new_b)
-match()
+index_match <- match(lower_new_b,unique_words)
+tabulate_index_match <- tabulate(index_match)
+sort_results <- sort(tabulate_index_match, index.return = TRUE, decreasing = TRUE)
 
 ```
