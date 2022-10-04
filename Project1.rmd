@@ -40,12 +40,14 @@ split_punct <- function(b, test){
   }
   
   
-  for (i in c(1:length(b))) {
-    if (b[i] %in% punct) {
+  for (i in c(1:length(b))){
+    if(b[i] %in% punct){
       new_b[i+tracker] <- substr(b[i], 1, nchar(b[i]) - 1)
       new_b[i + tracker + 1] <- substr(b[i], nchar(b[i]), nchar(b[i]))
       tracker <- tracker + 1
-    } else {new_b[i + tracker] <- b[i]}
+    }else{
+      new_b[i + tracker] <- b[i]
+      }
   }
   return(new_b)
 }
@@ -76,7 +78,9 @@ T_array <- data.frame(first_column, second_column, third_column)
 T_array <- T_array[is.na(rowSums(T_array)) == FALSE,]
 
 
-Index_to_common_words <- function(x){return(result_list[x])}
+Index_to_common_words <- function(x){
+  return(result_list[x])
+}
 matrix_x <- cbind(c(lapply(T_array$first_column, FUN = Index_to_common_words)), c(lapply(T_array$second_column, FUN = Index_to_common_words)), c(lapply(T_array$third_column, FUN = Index_to_common_words)))
 
 Inital_W_map <- unique(T_array$first_column)
@@ -88,51 +92,54 @@ second_word_probability <- rep(0, length(second_W_map[[1]]))
 df2 <- data.frame(c(second_W_map[1]), c(second_W_map[2]), rep(0, length(second_W_map[[1]])))
 colnames(df2) <- c("first_column", "second_column", "Freq")
 
-for(i in c(1:length(second_W_map[[1]]))) {
-  for(j in c(1:length(T_array[[1]]))) {
-    
+for(i in c(1:length(second_W_map[[1]]))){
+  for(j in c(1:length(T_array[[1]]))){
     if (T_array[j, 1] == second_W_map[i,1] && T_array[j, 2] == second_W_map[i,2]){
     second_word_probability[i] <- second_word_probability[i] + 1
-    
-    df2[i, 3] <- df2[i,3] + 1}
+    df2[i, 3] <- df2[i, 3] + 1
+    }
   }
-  
 }
 
 third_W_map <- unique(T_array[1:3])
 third_word_probability <- rep(0, length(third_W_map[[1]]))
+df3 <- data.frame(c(third_W_map[1]), c(third_W_map[2]), c(third_W_map[3]), rep(0, length(third_W_map[[1]])))
+colnames(df3) <- c("first_column", "second_column", "third_column", "Freq")
 
-for(i in c(1:length(third_W_map[[1]]))) {
-  for(j in c(1:length(T_array[[1]]))) {
-    
+for(i in c(1:length(third_W_map[[1]]))){
+  for(j in c(1:length(T_array[[1]]))){
     if (T_array[j, 1] == third_W_map[i,1] && T_array[j, 2] == third_W_map[i,2] && T_array[j, 3] == third_W_map[i,3]){
-    third_word_probability[i] <- third_word_probability[i] + 1}
-    
+    third_word_probability[i] <- third_word_probability[i] + 1
+    df3[i, 4] <- df3[i, 4] + 1
+    }
   }
-  
 }
 ```
 
 
 ```{r}
-
-word_1 <- function(){sample(Inital_W_map, 1,prob = Initail_prob)}
+word_1 <- function(){
+  sample(Inital_W_map, 1, prob = Initail_prob)
+}
 
 word_2 <- function(w1){
   new_ops <- second_W_map[second_W_map[1] == w1,]
   freq <- c(1:length(new_ops[[1]]))
-
-  for (i in c(1:length(new_ops[[1]]))) {
-    freq[i] <- subset(df2, first_column == new_ops[i,1] & second_column == new_ops[i,2],3)[[1]]
+  for (i in c(1:length(new_ops[[1]]))){
+    freq[i] <- subset(df2, df2$first_column == new_ops[i,1] & df2$second_column == new_ops[i,2],3)[[1]]
   }
-  sample_1 <- sample(new_ops[,2], 1, prob = freq)
-  
+  sample_1 <- sample(as.factor(new_ops[,2]), 1, prob = freq) |> as.character() |> as.numeric()
   return(sample_1)
-  
 }
 
-word_3 <- function(w1, w2 = word_2(w1)){
-  
+word_3 <- function(w1){
+  w2 <- word_2(w1)
+  new_ops <- third_W_map[third_W_map[1] == w1 & third_W_map[2] == w2,]
+  freq <- c(1:length(new_ops[[1]]))
+  for (i in c(1:length(new_ops[[1]]))){
+    freq[i] <- subset(df3, df3$first_column == new_ops[i,1] & df3$second_column == new_ops[i,2] & df3$third_column == new_ops[i,3],4)[[1]]
+  }
+  sample_1 <- sample(as.factor(new_ops[,3]), 1, prob = freq) |> as.character() |> as.numeric()
+  return(sample_1)
 }
-  
 ```
