@@ -121,14 +121,17 @@ word_1 <- function(){sample(Inital_W_map, 1,prob = Initail_prob)}
 word_2 <- function(w1){
   new_ops <- second_W_map[second_W_map[1] == w1,]
   freq <- c(1:length(new_ops[[1]]))
-  
+
   for (i in c(1:length(new_ops[[1]]))) {
-    freq[i] <- df2[df2['first_column'== new_ops[i,1] && 'second_column'== new_ops[i,2],3]]
+    freq[i] <- subset(df2, first_column == new_ops[i,1] & second_column == new_ops[i,2],3)[[1]]
   }
+  sample_1 <- sample(new_ops[,2], 1, prob = freq)
   
+  return(sample_1)
   
-  
-  return(freq)
+}
+
+word_3 <- function(w1, w2 = word_2(w1)){
   
 }
   
