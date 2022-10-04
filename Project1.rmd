@@ -85,13 +85,16 @@ Initail_prob <- Intial_word_probability/sum(Intial_word_probability)
 
 second_W_map <- unique(T_array[1:2])
 second_word_probability <- rep(0, length(second_W_map[[1]]))
+df2 <- data.frame(c(second_W_map[1]), c(second_W_map[2]), rep(0, length(second_W_map[[1]])))
+colnames(df2) <- c("first_column", "second_column", "Freq")
 
 for(i in c(1:length(second_W_map[[1]]))) {
   for(j in c(1:length(T_array[[1]]))) {
     
     if (T_array[j, 1] == second_W_map[i,1] && T_array[j, 2] == second_W_map[i,2]){
-    second_word_probability[i] <- second_word_probability[i] + 1}
+    second_word_probability[i] <- second_word_probability[i] + 1
     
+    df2[i, 3] <- df2[i,3] + 1}
   }
   
 }
@@ -117,16 +120,15 @@ word_1 <- function(){sample(Inital_W_map, 1,prob = Initail_prob)}
 
 word_2 <- function(w1){
   new_ops <- second_W_map[second_W_map[1] == w1,]
-  new_T_array <- T_array[T_array[,1] == w1,c(1,2)]
+  freq <- c(1:length(new_ops[[1]]))
   
-  for(i in c(1:new_ops[[1]]))) {
-  for(j in c(1:length(T_array[[1]]))) {
-    
-    if (T_array[j, 1] == third_W_map[i,1] && T_array[j, 2] == third_W_map[i,2] && T_array[j, 3] == third_W_map[i,3]){
-    third_word_probability[i] <- third_word_probability[i] + 1}
+  for (i in c(1:length(new_ops[[1]]))) {
+    freq[i] <- df2[df2['first_column'== new_ops[i,1] && 'second_column'== new_ops[i,2],3]]
+  }
   
   
-  return(new_ops)
+  
+  return(freq)
   
 }
   
