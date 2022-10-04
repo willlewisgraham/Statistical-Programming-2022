@@ -70,9 +70,28 @@ common_word_match <- match(lower_new_b, result_list)
 first_column <- common_word_match[1 : (length(common_word_match) - 2)]
 second_column <- first_column[2 : (length(common_word_match) - 1)]
 third_column <- first_column[3 : length(common_word_match)]
-T_array <- cbind(first_column, second_column, third_column)
+T_array <- data.frame(first_column, second_column, third_column)
 
-T_array <- T_array[which(rowSums(T_array) |> is.na() == FALSE),]
+T_array <- T_array[is.na(rowSums(T_array)) == FALSE,]
 print(result_list[T_array])
 
+Index_to_common_words <- function(x){return(result_list[x])}
+matrix_x <- cbind(c(lapply(T_array$first_column, FUN = Index_to_common_words)), c(lapply(T_array$second_column, FUN = Index_to_common_words)), c(lapply(T_array$third_column, FUN = Index_to_common_words)))
+
+Inital_W_map <- unique(T_array$first_column)
+Intial_word_probability <- tabulate(match(T_array$first_column, unique(T_array$first_column)))
+Initail_prob <- Intial_word_probability/sum(Intial_word_probability)
+
+second_W_map <- unique(T_array[1:2])
+second_word_probability <- rep(0, length(second_W_map))
+
+for(i in c(1:length(second_W_map[[1]]))) {
+  for(j in c(1:length(T_array[[1]]))) {
+    
+    if (identical(T_array[j, c(1,2)], second_W_map [i,]))
+    second_word_probability[i] <- second_word_probability [i] + 1
+    
+  }
+  
+}
 ```
