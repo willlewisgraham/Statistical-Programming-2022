@@ -132,8 +132,7 @@ word_2 <- function(w1){
   return(sample_1)
 }
 
-word_3 <- function(w1){
-  w2 <- word_2(w1)
+word_3 <- function(w1, w2){
   new_ops <- third_W_map[third_W_map[1] == w1 & third_W_map[2] == w2,]
   freq <- c(1:length(new_ops[[1]]))
   for (i in c(1:length(new_ops[[1]]))){
@@ -149,19 +148,12 @@ words_generator_50 <- function(){
   w1 <- word_1()
   sentence <- rep (0,50)
   sentence[1] <- w1
-  for (i in c(2:50)){
-    sentence[i] <- if (sentence[i-2] > 0 && sentence[i-1] > 0 && is.na(word_3(sentence[i-2])) == FALSE) {word_3(sentence[i-2])}
-    else if (sentence[i-2] > 0 && sentence[i-1] > 0 && is.na(word_3(sentence[i-2])) == TRUE && is.na(word_2(sentence[i-1])) == FALSE) {word_2(sentence[i-1])}
-    else if (word_1())
-    
- 
-    }
-    
-    
+  sentence[2] <- word_2(w1)
+  
+  for (i in c(3:50)){
+    sentence[i] <- word_3(sentence[i - 2], sentence[i - 1])
   }
-  
-  
 }
-
+cat(sentence)
 ```
 
