@@ -128,7 +128,7 @@ word_2 <- function(w1){
   for (i in c(1:length(new_ops[[1]]))){
     freq[i] <- subset(df2, df2$first_column == new_ops[i,1] & df2$second_column == new_ops[i,2],3)[[1]]
   }
-  sample_1 <- sample(as.factor(new_ops[,2]), 1, prob = freq) |> as.character() |> as.numeric()
+  sample_1 <- sample(as.numeric(as.character(as.factor(new_ops[,2]), 1, prob = freq)))
   return(sample_1)
 }
 
@@ -138,22 +138,28 @@ word_3 <- function(w1, w2){
   for (i in c(1:length(new_ops[[1]]))){
     freq[i] <- subset(df3, df3$first_column == new_ops[i,1] & df3$second_column == new_ops[i,2] & df3$third_column == new_ops[i,3],4)[[1]]
   }
-  sample_1 <- sample(as.factor(new_ops[,3]), 1, prob = freq) |> as.character() |> as.numeric()
+  sample_1 <- sample(as.numeric(as.character(as.factor(new_ops[,3]), 1, prob = freq)))
   return(sample_1)
 }
 ```
 
 ```{r}
 words_generator_50 <- function(){
-  w1 <- word_1()
-  sentence <- rep (0,50)
-  sentence[1] <- w1
-  sentence[2] <- word_2(w1)
-  
-  for (i in c(3:50)){
-    sentence[i] <- word_3(sentence[i - 2], sentence[i - 1])
+ sentence <- rep (0,50)
+    for (i in c(1:length(sentence))){
+      sentence[i] <- try(word_3(sentence[i-2],sentence[i-1]), TRUE)
+      if (class(sentence[i]) != "numeric")
+      {sentence[i] <- try(word_2(sentence[i-1]), TRUE)
+        if (class(sentence[i]) != "numeric")
+           
+          {sentence[i] <- word_1()}}
   }
-}
-cat(sentence)
+
+ return(sentence)}
+
+```
+
+```{r}
+
 ```
 
