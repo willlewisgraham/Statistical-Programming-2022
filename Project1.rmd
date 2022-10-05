@@ -156,10 +156,3 @@ words_generator_50 <- function(){
   }
 
  return(sentence)}
-
-```
-
-```{r}
-
-```
-
