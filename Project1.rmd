@@ -167,4 +167,19 @@ words_generator_50 <- function(){
 test <- words_generator_50()
 cat(test)
 ```
+```{r}
+cap_words <- grep("[A-Z]", new_b, value = T)
+common_cap_words <- cap_words[tolower(cap_words) %in% result_list]
+unique_cap_words <- unique(common_cap_words)
+cap_index_match <- match(common_cap_words, unique_cap_words)
+freq_cap_index_match <- tabulate(cap_index_match)
+cap_freq_array <- data.frame(Unique_Cap_Words = unique_cap_words, Frequency = freq_cap_index_match)
+
+```
+
+```{r}
+lower_index_match <- match(lower_new_b, result_list)
+freq_lower_index_match <- tabulate(lower_index_match)
+lower_freq_array <- data.frame(Unique_Lower_Words = result_list, Frequency = freq_lower_index_match)
+```
 
