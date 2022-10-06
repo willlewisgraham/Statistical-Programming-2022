@@ -9,7 +9,6 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Ctrl + Shift + H: Set Working Directory
 
 ```{r}
 a <- scan("pg10.txt",what="character",skip=104) ## skip contents
@@ -19,8 +18,6 @@ a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
 
 # a <- a[1:100] # test
 ```
-
-A Function Splitting Punctuation Marks
 
 ```{r}
 indexes_split_punct <- function(string){
@@ -107,7 +104,10 @@ df3['Freq'] <- tabulate_match_index2
 ```{r}
 PI <- grep("[',','.','?','!',':',';']", result_list)
 
-word_1 <- function(){
+word_1 <- function(punctuation){
+  if (punctuation == TRUE){
+    return(as.numeric((sample(Inital_W_map, 1, prob = Initail_prob))))
+  }
   while (TRUE){
     ret <- sample(Inital_W_map, 1, prob = Initail_prob)
     if (!(ret %in% PI)) {
@@ -138,9 +138,26 @@ word_3 <- function(w1, w2){
 ```
 
 ```{r}
+lower_index_match <- match(lower_new_b, result_list)
+freq_lower_index_match <- tabulate(lower_index_match)
+lower_freq_array <- data.frame(Unique_Lower_Words = result_list, Frequency = freq_lower_index_match)
+
+cp <- rep(0, length(result_list))
+for (i in 1:length(result_list)){
+  if (!(toupper(result_list[i]) %in% cap_freq_array$Unique_Cap_Words)){
+    cp[i] <- 0}
+  else{
+  cp[i] <- cap_freq_array[cap_freq_array$Unique_Cap_Words == toupper(result_list[i]),2]/lower_freq_array[lower_freq_array$Unique_Lower_Words == result_list[i],2]
+  }
+}
+
+dfcp <- data.frame(result_list, cp)
+```
+
+```{r}
 words_generator_50 <- function(){
  sentence <- as.numeric(rep (0,50))
- w1 <- word_1()
+ w1 <- word_1(FALSE)
  sentence[1] <- w1
  w2 <- word_2(w1)
  sentence[2] <- w2
@@ -150,13 +167,17 @@ words_generator_50 <- function(){
       } else if (sentence[i - 1] %in% second_W_map[[1]]){
         sentence[i] <- word_2(sentence[i - 1])
       } else {
-        sentence[i] <- word_1()
+        sentence[i] <- word_1(FALSE)
       }
     }
 
   sentence2 <- c(1:50)
   for (i in c(1:length(sentence2))){
-    sentence2[i] <- result_list[as.numeric(sentence[i])]
+  if (dfcp[sentence[i],2] <= 0.5){
+    sentence2[i] <- result_list[as.numeric(sentence[i])]}
+    else {
+     sentence2[i] <- paste(toupper(substr(result_list[as.numeric(sentence[i])], 1,1)), substr(result_list[as.numeric(sentence[i])], 2,nchar(result_list[as.numeric(sentence[i])])), sep ="")
+    }
   }
   return(sentence2)
 }
@@ -164,12 +185,36 @@ words_generator_50 <- function(){
 ```
 
 ```{r}
+words_generator_50_random <- function(){
+ sentence <- as.numeric(rep (0,50))
+    for (i in 1:length(sentence)){
+        sentence[i] <- word_1(TRUE)
+      }
+    
+
+  sentence2 <- c(1:50)
+  for (i in c(1:length(sentence2))){
+  if (dfcp[sentence[i],2] <= 0.5){
+    sentence2[i] <- result_list[as.numeric(sentence[i])]}
+    else {
+     sentence2[i] <- paste(toupper(substr(result_list[as.numeric(sentence[i])], 1,1)), substr(result_list[as.numeric(sentence[i])], 2,nchar(result_list[as.numeric(sentence[i])])), sep ="")
+    }
+  }
+  return(sentence2)
+}
+```
+
+```{r}
 test <- words_generator_50()
 cat(test)
+
+test1 <- words_generator_50_random()
+cat(test1)
+
 ```
 ```{r}
 cap_words <- grep("[A-Z]", new_b, value = T)
-common_cap_words <- cap_words[tolower(cap_words) %in% result_list]
+common_cap_words <- toupper(cap_words[tolower(cap_words) %in% result_list])
 unique_cap_words <- unique(common_cap_words)
 cap_index_match <- match(common_cap_words, unique_cap_words)
 freq_cap_index_match <- tabulate(cap_index_match)
@@ -181,5 +226,23 @@ cap_freq_array <- data.frame(Unique_Cap_Words = unique_cap_words, Frequency = fr
 lower_index_match <- match(lower_new_b, result_list)
 freq_lower_index_match <- tabulate(lower_index_match)
 lower_freq_array <- data.frame(Unique_Lower_Words = result_list, Frequency = freq_lower_index_match)
+
+cp <- rep(0, length(result_list))
+for (i in 1:length(result_list)){
+  if (!(toupper(result_list[i]) %in% cap_freq_array$Unique_Cap_Words)){
+    cp[i] <- 0}
+  else{
+  cp[i] <- cap_freq_array[cap_freq_array$Unique_Cap_Words == toupper(result_list[i]),2]/lower_freq_array[lower_freq_array$Unique_Lower_Words == result_list[i],2]
+  }
+}
+
+dfcp <- data.frame(result_list, cp)
+
+```
+
+```{r}
+
+
+
 ```
 
