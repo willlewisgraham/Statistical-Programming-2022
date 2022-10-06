@@ -1,7 +1,7 @@
 ---
 title: "Project 1"
 author: "Will Graham; Richelle Lee; Robin Lin"
-date: '2022-09-29'
+date: '2022-10-06'
 output: word_document
 ---
 
@@ -25,7 +25,7 @@ A Function Splitting Punctuation Marks
 ```{r}
 indexes_split_punct <- function(string){
   ## Separating words with punctuation marks
-  indexes <- grep("[^a-z ^A-Z]",a) ## obtain the indexes of words containing non-letter characters 
+  indexes <- grep("[',','.','?','!',':',';']",a) ## obtain the indexes of words containing non-letter characters 
   return(indexes)
 }
 
@@ -105,8 +105,15 @@ df3['Freq'] <- tabulate_match_index2
 ```
 
 ```{r}
+PI <- grep("[',','.','?','!',':',';']", result_list)
+
 word_1 <- function(){
-  sample(Inital_W_map, 1, prob = Initail_prob)
+  while (TRUE){
+    ret <- sample(Inital_W_map, 1, prob = Initail_prob)
+    if (!(ret %in% PI)) {
+      return(as.numeric(ret))
+    }
+  }
 }
 
 word_2 <- function(w1){
@@ -115,7 +122,7 @@ word_2 <- function(w1){
   for (i in c(1:length(new_ops[[1]]))){
     freq[i] <- subset(df2, df2$Concat_w1_w2 == paste(new_ops[i,1], new_ops[i,2]), 2)[[1]]
   }
-  sample_1 <- sample(as.numeric(as.character(as.factor(new_ops[,2]), 1, prob = freq)))
+  sample_1 <- as.numeric(sample(as.numeric(as.character(as.factor(new_ops[,2]))), 1, prob = freq))
   return(sample_1)
 }
 
@@ -125,7 +132,7 @@ word_3 <- function(w1, w2){
   for (i in c(1:length(new_ops[[1]]))){
     freq[i] <- subset(df3, df3$Concat_w1_w2_w3 == paste(new_ops[i,1], new_ops[i,2], new_ops[i,3]),2)[[1]]
   }
-  sample_1 <- sample(as.numeric(as.character(as.factor(new_ops[,3]), 1, prob = freq)))
+  sample_1 <- as.numeric(sample(as.numeric(as.character(as.factor(new_ops[,3]))), 1, prob = freq))
   return(sample_1)
 }
 ```
@@ -133,32 +140,31 @@ word_3 <- function(w1, w2){
 ```{r}
 words_generator_50 <- function(){
  sentence <- as.numeric(rep (0,50))
-    for (i in c(1:length(sentence))){
-      sentence[i] <- try(word_3(sentence[i-2],sentence[i-1]), TRUE)
-      if (class(sentence[i]) != "numeric")
-        {sentence[i] <- try(word_2(sentence[i-1]), TRUE)
-      if (class(sentence[i]) != "numeric")
-        {sentence[i] <- word_1()}}
-  }
+ w1 <- word_1()
+ sentence[1] <- w1
+ w2 <- word_2(w1)
+ sentence[2] <- w2
+    for (i in c(3:length(sentence))){
+      if(paste(sentence[i - 2], sentence[i - 1]) %in% df2[1]){
+        sentence[i] <- word_3(sentence[i - 2], sentence[i - 1])
+      } else if (sentence[i - 1] %in% second_W_map[[1]]){
+        sentence[i] <- word_2(sentence[i - 1])
+      } else {
+        sentence[i] <- word_1()
+      }
+    }
 
-sentence2 <- c(1:50)
-for (i in c(1:length(sentence2))){
-  sentence2[i] <- result_list[as.numeric(sentence[i])]
-  
+  sentence2 <- c(1:50)
+  for (i in c(1:length(sentence2))){
+    sentence2[i] <- result_list[as.numeric(sentence[i])]
+  }
+  return(sentence2)
 }
-  
- return(sentence2)}
 
 ```
 
 ```{r}
-split_conc <- strsplit(as.character(df3[1,1]), " +")
-df4 <- data.frame(w1 = 1, w2 = 1, w3 = 1, Freq = df3[2])
-for(i in 1:length(df3[[1]])){
-  df4[i,1] <- result_list[as.numeric(strsplit(as.character(df3[i,1]), " +")[[1]][1])]
-  df4[i,2] <- result_list[as.numeric(strsplit(as.character(df3[i,1]), " +")[[1]][2])]
-  df4[i,3] <- result_list[as.numeric(strsplit(as.character(df3[i,1]), " +")[[1]][3])]
-}
-  
+test <- words_generator_50()
+cat(test)
 ```
 
