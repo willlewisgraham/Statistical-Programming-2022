@@ -9,18 +9,23 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
+# Project 1
+# Will Graham; Richelle Lee; Robin Lin
+# 2022-10-06
+### Group Contributions:
+# Instead of splitting tasks between our group, we worked collaboratively on each step of the process.
+# Contributions were 1/3 per team member.
+
+
+
 ### Loads the Bible text and removes the unecessary pages.
 
-
+# User must set wd accordingly
 a <- scan("pg10.txt",what="character",skip=104) ## skip contents
 n <- length(a)
 a <- a[-((n-2886):n)] ## strip license
 a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
-```
-
-```{r}
 ### Giving punctuations their own indexes in bible text list.
 
 
@@ -52,9 +57,6 @@ split_punct <- function(b, test){
   new_b[-final_punct_indexes] <- no_punct_list
   return(new_b)
 }
-```
-
-```{r}
 ### Lowering capitals and calculating the top 500 most common words.
 
 
@@ -66,9 +68,6 @@ tabulate_index_match <- tabulate(index_match) ## Count the occurrences of the un
 sort_results <- sort(tabulate_index_match, index.return = TRUE, decreasing = TRUE)
 top_500 <- sort_results$ix[1 : 500] ## Pull the top 500 most common words.
 result_list <- unique_words[top_500]
-```
-
-```{r}
 ### Saving: every occurrence of 3 consecutive common words, distinct combinations of two (and three) consecutive common words.
 ### Counts occurrences of distinct combinations of two (and three) consecutive common words.
 
@@ -115,9 +114,6 @@ colnames(df3) <- c("Concat_w1_w2_w3", "Freq")
 match_indexes2 <- match(T_array_conc2, third_W_map_conc)
 tabulate_match_index2 <- tabulate(match_indexes2) ## Count the occurrences of two consecutive common words in the Bible text via. T_array.
 df3['Freq'] <- tabulate_match_index2
-```
-
-```{r}
 ### Defining functions to generate the next appropriate word in a Markov text model. 
 ### These functions handle cases when we have: no valid prior word, one valid prior word, and two valid prior word.
 
@@ -159,9 +155,6 @@ word_3 <- function(w1, w2){
   sample_1 <- as.numeric(sample(as.numeric(as.character(as.factor(new_ops[,3]))), 1, prob = freq)) ## Return random word choice based on specified probabilities.
   return(sample_1)
 }
-```
-
-```{r}
 ### Calculating proportion of capital occurrences for each common word in the Bible text.
 
 
@@ -188,75 +181,67 @@ for (i in 1:length(result_list)){
   }
 }
 dfcp <- data.frame(result_list, cp) ## Store the ratio of the capital occurrences of common words.
-```
-
-```{r}
 ### Generates a 50 word "paragraph" using a second order Markov model
 
 
 words_generator_50 <- function(){
- sentence <- as.numeric(rep (0,50))
- w1 <- word_1(FALSE) ## Initialise the first word assuming no prior words.
- sentence[1] <- w1
- w2 <- word_2(w1) ## Generate the second word based on the first word.
- sentence[2] <- w2
- ## Attempt to generate the next word in the sequence based on preceding word pair; if impossible, attempt to generate the next word in sequence based on preceding word; if impossible, generate the next word assuming no prior words.
-    for (i in c(3:length(sentence))){
-      if(paste(sentence[i - 2], sentence[i - 1]) %in% df2[1]){ ## Check if preceding word pair starts any common word triplets in the Bible text. 
-        sentence[i] <- word_3(sentence[i - 2], sentence[i - 1]) ## If yes, generate next word based on preceding word pair.
-      } else if (sentence[i - 1] %in% second_W_map[[1]]){ ## Check if preceding word starts any common word pairs in the Bible text.
-        sentence[i] <- word_2(sentence[i - 1]) ## If yes, generate next word based on preceding word.
-      } else {
-        sentence[i] <- word_1(FALSE) ## Default to random common word generation based on frequency in Bible text.
-      }
+  sentence <- as.numeric(rep (0,50))
+  w1 <- word_1(FALSE) ## Initialise the first word assuming no prior words.
+  sentence[1] <- w1
+  w2 <- word_2(w1) ## Generate the second word based on the first word.
+  sentence[2] <- w2
+  ## Attempt to generate the next word in the sequence based on preceding word pair; if impossible, attempt to generate the next word in sequence based on preceding word; if impossible, generate the next word assuming no prior words.
+  for (i in c(3:length(sentence))){
+    if(paste(sentence[i - 2], sentence[i - 1]) %in% df2[1]){ ## Check if preceding word pair starts any common word triplets in the Bible text. 
+      sentence[i] <- word_3(sentence[i - 2], sentence[i - 1]) ## If yes, generate next word based on preceding word pair.
+    } else if (sentence[i - 1] %in% second_W_map[[1]]){ ## Check if preceding word starts any common word pairs in the Bible text.
+      sentence[i] <- word_2(sentence[i - 1]) ## If yes, generate next word based on preceding word.
+    } else {
+      sentence[i] <- word_1(FALSE) ## Default to random common word generation based on frequency in Bible text.
     }
-
- 
- # Convert common word indexes to their respective words.
+  }
+  
+  
+  # Convert common word indexes to their respective words.
   sentence2 <- c(1:50)
   for (i in c(1:length(sentence2))){
-  if (dfcp[sentence[i],2] <= 0.5){ ## If the common word appears as a capital less than 50% of the time in the Bible text, store it as a lowercase.
-    sentence2[i] <- result_list[as.numeric(sentence[i])]}
+    if (dfcp[sentence[i],2] <= 0.5){ ## If the common word appears as a capital less than 50% of the time in the Bible text, store it as a lowercase.
+      sentence2[i] <- result_list[as.numeric(sentence[i])]}
     else { ## Else, capitalises the first letter of the common word
-     sentence2[i] <- paste(toupper(substr(result_list[as.numeric(sentence[i])], 1,1)), substr(result_list[as.numeric(sentence[i])], 2,nchar(result_list[as.numeric(sentence[i])])), sep ="")
+      sentence2[i] <- paste(toupper(substr(result_list[as.numeric(sentence[i])], 1,1)), substr(result_list[as.numeric(sentence[i])], 2,nchar(result_list[as.numeric(sentence[i])])), sep ="")
     }
   }
   return(sentence2)
 }
-```
-
-```{r}
 ### Generates a 50 word "paragraph" using a 0th order Markov model
 
 
 words_generator_50_random <- function(){
- sentence <- as.numeric(rep (0,50))
-    for (i in 1:length(sentence)){ ## Instead of trying higher order prediction models, always assume no prior word.
-        sentence[i] <- word_1(TRUE)
-      }
-    
-
- # Same process as previous common word conversion.
+  sentence <- as.numeric(rep (0,50))
+  for (i in 1:length(sentence)){ ## Instead of trying higher order prediction models, always assume no prior word.
+    sentence[i] <- word_1(TRUE)
+  }
+  
+  
+  # Same process as previous common word conversion.
   sentence2 <- c(1:50)
   for (i in c(1:length(sentence2))){
-  if (dfcp[sentence[i],2] <= 0.5){
-    sentence2[i] <- result_list[as.numeric(sentence[i])]}
+    if (dfcp[sentence[i],2] <= 0.5){
+      sentence2[i] <- result_list[as.numeric(sentence[i])]}
     else {
-     sentence2[i] <- paste(toupper(substr(result_list[as.numeric(sentence[i])], 1,1)), substr(result_list[as.numeric(sentence[i])], 2,nchar(result_list[as.numeric(sentence[i])])), sep ="")
+      sentence2[i] <- paste(toupper(substr(result_list[as.numeric(sentence[i])], 1,1)), substr(result_list[as.numeric(sentence[i])], 2,nchar(result_list[as.numeric(sentence[i])])), sep ="")
     }
   }
   return(sentence2)
 }
-```
-
-```{r}
 ### Generate the 50 word "paragraph" with a 2nd order Markov model.
 test <- words_generator_50()
 cat(test)
-
-
+## daughter , stand in God ? do for the morning , or whether God : and they sat on the altar , and all the first day David arose , that the son of my chief priests which had no man among you . now , saying , and round
 ### Generate the 50 word "paragraph" with a 0th order Markov model.
 test1 <- words_generator_50_random()
-cat(test1)
+cat("\n", test1)
+## 
+##  , , . unto manner day fire rejoice the so be are the the and to therefore the you house do offer me and , , there : : gold , know blood and the me to ; under if land ? . of , send I evil let said
 ```
 
