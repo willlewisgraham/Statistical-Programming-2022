@@ -1,0 +1,25 @@
+---
+title: "Project 2"
+author: "Will Graham; Richelle Lee; Robin Lin"
+date: '2022-10-21'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+Pone <- function(n, k, strategy, nreps){
+  # n: # max boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
+  set.seed(8)
+  cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
+  if(strategy == 1){
+    i <- 1
+    while(i <= n){
+      
+    }
+  }
+}
+```
+
