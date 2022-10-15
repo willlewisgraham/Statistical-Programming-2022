@@ -10,30 +10,62 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-Pone <- function(n=5, k=5, strategy=1, nreps=10000){
-  # n: # max boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
+Pone <- function(n = 10, k = 5, strategy = 1, nreps = 50){
+  # n: max # boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
   cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
   successes <- 0
-   if(strategy == 1){
+  if (strategy == 1){
     i <- 1
     next_box <- k
-    while(i <= n){
+    while (i <= n){
       card <- cards[next_box]
       if (card != k){
-        i <- i +1
+        i <- i + 1
         next_box <- card
       } else {
         return (1)
       } 
-   } return (0)
-   }
-  for (j in 1:nreps){
+    } 
+    return (0)
+  }
+  
+  for (j in 1 : nreps){
     if (strategy == 2){
-      next_box <- sample(1:(2*n), 1)
       i <- 1
+      next_box <- sample(1 : (2 * n), 1)
+      while (i <= n){
+        card <- cards[next_box]
+        if (card != k){
+          i <- i + 1
+          next_box <- card
+        } else {
+          successes <- successes + 1
+          break
+        } 
+      } 
+    }
+    
+    if (strategy == 3){
+      i <- 1
+      next_box <- sample(1 : (2 * n), n, replace = FALSE)
+      while (i <= n){
+        card <- cards[next_box[i]]
+        if (card != k){
+          i <- i + 1
+        } else {
+          successes <- successes + 1
+          break
+        } 
+      } 
     }
   }
-  return (successes/nreps)
+  return (successes / nreps)
 }
 ```
 
+```{r}
+## Just to debug the above function, and you could delete this chunk afterwards.
+debug(Pone)
+Pone()
+undebug(Pone)
+```
