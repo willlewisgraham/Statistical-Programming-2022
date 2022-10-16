@@ -69,3 +69,69 @@ debug(Pone)
 Pone()
 undebug(Pone)
 ```
+
+```{r}
+Pall <- function(n = 10, strategy = 1, nreps = 50){
+  # n: max # boxes to be opened; strategy: 1, 2, 3; nreps: # simulations.
+  successes <- 0
+  for (j in 1 : nreps){
+    if (strategy == 1){
+      prisoners <- 1 : (2 * n)
+      set.seed(8)
+      cards <- sample(prisoners, 2 * n, replace = FALSE)
+      i <- 1
+      while (i <= n){
+        prisoners_new <- prisoners[-which(cards == prisoners)]
+        cards_new <- cards[-which(cards == prisoners)]
+        prisoners <- prisoners_new
+        cards <- cards_new
+        if (length(prisoners) == 0){
+          successes <- successes + 1
+          break
+        } else {
+          prisoners_new[order(prisoners_new)[1 : length(prisoners_new)]] <- 1 : length(prisoners_new)
+          cards_new[order(cards_new)[1 : length(cards_new)]] <- 1 : length(cards_new)
+          prisoners[cards_new] <- prisoners_new[1 : length(prisoners_new)]
+          cards <- cards_new
+        }
+        i = i + 1
+      }
+    }
+    
+    if (strategy == 2){
+      set.seed(8)
+      prisoners <- sample(1 : (2 * n), 2 * n, replace = FALSE)
+      cards <- sample(prisoners, 2 * n, replace = FALSE)
+      i <- 1
+      while (i <= n){
+        prisoners_new <- prisoners[-which(cards == prisoners)]
+        cards_new <- cards[-which(cards == prisoners)]
+        prisoners <- prisoners_new
+        cards <- cards_new
+        if (length(prisoners) == 0){
+          successes <- successes + 1
+          break
+        } else {
+          prisoners_new[order(prisoners_new)[1 : length(prisoners_new)]] <- 1 : length(prisoners_new)
+          cards_new[order(cards_new)[1 : length(cards_new)]] <- 1 : length(cards_new)
+          prisoners[cards_new] <- prisoners_new[1 : length(prisoners_new)]
+          cards <- cards_new
+        }
+        i = i + 1
+      }
+    }
+    
+    ##if (strategy == 3){
+      
+    ##}
+  }
+  return (successes / nreps)
+}
+```
+
+```{r}
+## Just to debug the above function, and you could delete this chunk afterwards.
+debug(Pall)
+Pall()
+undebug(Pall)
+```
