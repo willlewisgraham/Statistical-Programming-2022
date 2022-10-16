@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-Pone <- function(n = 10, k = 5, strategy = 1, nreps = 50){
+Pone <- function(n = 3, k = 1, strategy = 1, nreps = 1){
   # n: max # boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
   cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
   successes <- 0
@@ -77,7 +77,7 @@ Pall <- function(n = 10, strategy = 1, nreps = 50){
   for (j in 1 : nreps){
     if (strategy == 1){
       prisoners <- 1 : (2 * n)
-      set.seed(8)
+      #set.seed(8)
       cards <- sample(prisoners, 2 * n, replace = FALSE)
       i <- 1
       while (i <= n){
@@ -126,6 +126,33 @@ Pall <- function(n = 10, strategy = 1, nreps = 50){
     ##}
   }
   return (successes / nreps)
+}
+```
+
+```{r}
+Pall <- function(n = 3, strategy = 1, nreps = 10){
+  # n: max # boxes to be opened; strategy: 1, 2, 3; nreps: # simulations.
+  trial_successes <- 0
+  for(i in 1:nreps){
+    set.seed(sample(1:100, 1))
+      for (j in 1:(2*n)){
+        if(Pone(n, j, strategy, nreps = 1) == 0){
+          j <- j - 1
+          break
+        }
+        
+      }
+    if (j == 2*n){
+      trial_successes <- trial_successes + 1
+    }
+      
+  }
+  return (trial_successes/nreps)
+}
+
+test <- 0
+for (i in 1:1000){
+  test = test + Pall()
 }
 ```
 
