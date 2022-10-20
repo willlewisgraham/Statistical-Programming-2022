@@ -41,98 +41,42 @@ undebug(Pone)
 ```
 
 ```{r}
-Pall <- function(n = 3, strategy = 1, nreps = 10){
-  # n: max # boxes to be opened; strategy: 1, 2, 3; nreps: # simulations.
-  successes <- 0
-  for (j in 1 : nreps){
-    if (strategy == 1){
-      prisoners <- 1 : (2 * n)
-      set.seed(sample(1 : 100, 1))
-      cards <- sample(prisoners, 2 * n, replace = FALSE)
-      i <- 1
-      while (i <= n){
-        prisoners_new <- prisoners[-which(cards == prisoners)]
-        cards_new <- cards[-which(cards == prisoners)]
-        prisoners <- prisoners_new
-        cards <- cards_new
-        if (length(prisoners) == 0){
-          successes <- successes + 1
-          break
-        } else {
-          prisoners_new[order(prisoners_new)[1 : length(prisoners_new)]] <- 1 : length(prisoners_new)
-          cards_new[order(cards_new)[1 : length(cards_new)]] <- 1 : length(cards_new)
-          prisoners[cards_new] <- prisoners_new[1 : length(prisoners_new)]
-          cards <- cards_new
-        }
-        i = i + 1
-      }
+Pallv2 <- function(n = 100, strategy = 1, nreps = 10000){
+  trial_successes = 0
+  for (i in  1 : nreps){
+    static_choices <- matrix(0, 2*n, n)
+    for (k in 1 : (2 * n)){
+      static_choices[k,] <- sample(1 : (2 * n), n, replace = FALSE)
     }
+    prisoner_successes <- matrix(FALSE, n, 2* n)
+    cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
     
-    if (strategy == 2){
-      set.seed(sample(1:100, 1))
-      prisoners <- sample(1 : (2 * n), 2 * n, replace = FALSE)
-      cards <- sample(prisoners, 2 * n, replace = FALSE)
-      i <- 1
-      while (i <= n){
-        prisoners_new <- prisoners[-which(cards == prisoners)]
-        cards_new <- cards[-which(cards == prisoners)]
-        prisoners <- prisoners_new
-        cards <- cards_new
-        if (length(prisoners) == 0){
-          successes <- successes + 1
-          break
-        } else {
-          prisoners_new[order(prisoners_new)[1 : length(prisoners_new)]] <- 1 : length(prisoners_new)
-          cards_new[order(cards_new)[1 : length(cards_new)]] <- 1 : length(cards_new)
-          prisoners[cards_new] <- prisoners_new[1 : length(prisoners_new)]
-          cards <- cards_new
-        }
-        i = i + 1
-      }
+    prisoner_current_card <- switch(strategy, cards, sample(1 : (2 * n), 2 * n, replace = FALSE), static_choices[,1])
+    prisoner_successes[1,] <- prisoner_current_card == 1 : (2 * n)
+    for (j in 2 : n){
+      prisoner_current_card <- switch(strategy, cards[prisoner_current_card], cards[prisoner_current_card], static_choices[,j])
+      prisoner_successes[j,] <- prisoner_current_card == 1 : (2 * n)
     }
-    
-    ##if (strategy == 3){
-      
-    ##}
-  }
-  return (successes / nreps)
-}
-```
-
-```{r}
-Pall <- function(n = 3, strategy = 1, nreps = 10){
-  # n: max # boxes to be opened; strategy: 1, 2, 3; nreps: # simulations.
-  trial_successes <- 0
-  for(i in 1 : nreps){
-    set.seed(sample(1 : 100, 1))
-    for (j in 1 : (2 * n)){
-      if(Pone(n, j, strategy, 1) == 0){
-        j <- j - 1
-        break
-      }
-    }
-    if (j == 2 * n){
+    prisoner_results <- apply(prisoner_successes, 2, sum)
+    if (!(0 %in% prisoner_results)){
       trial_successes <- trial_successes + 1
-    }
+    } 
   }
-  return (trial_successes / nreps)
-}
-
-test <- 0
-for (i in 1:1000){
-  test = test + Pall()
+  return(trial_successes / nreps)
 }
 ```
+
+
 
 ```{r}
 ## Just to debug the above function, and you could delete this chunk afterwards.
-debug(Pall)
-Pall()
-undebug(Pall)
+debug(Pallv2)
+Pallv2()
+undebug(Pallv2)
 ```
 
 ```{r}
-dloop <- function(n = 50, nreps = 10000){
+dloop <- function(n = 100, nreps = 10000){
   # n: max # boxes to be opened; nreps: # simulations.
   freq <- matrix(0, nreps, 2 * n)
   for (i in 1 : nreps){
@@ -161,3 +105,13 @@ debug(dloop)
 dloop()
 undebug(dloop)
 ```
+
+
+```{r}
+ret <- 0
+for (i in 51:100){
+  ret <- ret + test[i]*(i/100)^50
+}
+
+```
+
