@@ -10,18 +10,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-Pone <- function(n = 3, k = 3, strategy = 1, nreps = 10000){
+Pone <- function(n = 20, k = 3, strategy = 1, nreps = 10000){
   # n: max # boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
   successes <- 0
+  static_choices <- sample(1:(2*n), n, replace = FALSE)
   for (j in 1 : nreps){
-    cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
-    next_box <- switch(strategy, k, sample(1:(2*n), 1), sample(1:(2*n), 1))
     i <- 1
+    cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
+    next_box <- switch(strategy, k, sample(1:(2*n), 1), static_choices[i])
     while (i <= n){
-      card <- switch(strategy, cards[next_box], cards[next_box], sample(1:(2*n), 1))
+      card <- cards[next_box]
       if (card != k){
-        next_box <- card
         i <- i + 1
+        next_box <- switch(strategy, card, card, static_choices[i])
       } else {
         successes <- successes + 1
         i <- n + 1
