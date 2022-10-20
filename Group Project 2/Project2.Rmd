@@ -9,8 +9,9 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ```{r}
-Pone <- function(n = 20, k = 3, strategy = 1, nreps = 10000){
+Pone <- function(n, k, strategy, nreps = 10000){
   # n: max # boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
   successes <- 0
   static_choices <- sample(1 : (2 * n), n, replace = FALSE)
@@ -33,15 +34,9 @@ Pone <- function(n = 20, k = 3, strategy = 1, nreps = 10000){
 }
 ```
 
-```{r}
-## Just to debug the above function, and you could delete this chunk afterwards.
-debug(Pone)
-Pone()
-undebug(Pone)
-```
 
 ```{r}
-Pall <- function(n = 100, strategy = 1, nreps = 10000){
+Pall <- function(n, strategy, nreps = 10000){
   trial_successes = 0
   for (i in  1 : nreps){
     static_choices <- matrix(0, 2 * n, n)
@@ -67,14 +62,22 @@ Pall <- function(n = 100, strategy = 1, nreps = 10000){
 ```
 
 ```{r}
-## Just to debug the above function, and you could delete this chunk afterwards.
-debug(Pall)
-Pall()
-undebug(Pall)
+for (i in c(5, 50)){
+  for (j in 1 : 3){
+    cat("When n = ", i, " and strategy = ", j, ", the estimated probability of an individual prisoner finding their number is ", round(Pone(n = i, k = 1, strategy = j), 2),"\n", sep = "")
+  }
+}
+
+for (i in c(5, 50)){
+  for (j in 1 : 3){
+    cat("When n = ", i, " and strategy = ", j, ", the estimated probability of all prisoners finding their numbers is ", round(Pall(n = i, strategy = j), 4),"\n", sep = "")
+  }
+}
 ```
 
+
 ```{r}
-dloop <- function(n = 100, nreps = 10000){
+dloop <- function(n, nreps = 10000){
   # n: max # boxes to be opened; nreps: # simulations.
   freq <- matrix(0, nreps, 2 * n)
   for (i in 1 : nreps){
@@ -97,17 +100,11 @@ dloop <- function(n = 100, nreps = 10000){
 }
 ```
 
-```{r}
-## Just to debug the above function, and you could delete this chunk afterwards.
-debug(dloop)
-dloop()
-undebug(dloop)
-```
 
 ```{r}
-ret <- 0
-for (i in 51:100){
-  ret <- ret + test[i]*(i/100)^50
-}
+loop_len_prob <- dloop(50)
+cat("For n = 50, the probability that there is no loop longer than 50 in a random reshuffling of cards to boxes is", (1 - round(sum(loop_len_prob[51 : 100]), 2)))
 
+barplot(loop_len_prob, xlab = "Loop Length", ylab = "Probability of at least one occurrence", main = "Loop Length Probability Distribution", names.arg = c(1 : 100), col = c(rep("grey", 50), rep("red", 50)), sub = "Red bars represent the probability of observing at least one loop of length 50 or greater")
 ```
+
