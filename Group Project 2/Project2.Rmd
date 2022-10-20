@@ -10,69 +10,26 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-Pone <- function(n = 20, k = 3, strategy = 1, nreps = 10000){
+Pone <- function(n = 3, k = 3, strategy = 1, nreps = 10000){
   # n: max # boxes to be opened; k: some prisoner's number; strategy: 1, 2, 3; nreps: # simulations.
   successes <- 0
   for (j in 1 : nreps){
     cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
-    prisoner_succeeded <- FALSE
-    if (strategy == 1){
-      i <- 1
-      next_box <- k
-      while (i <= n){
-        if (prisoner_succeeded == FALSE){
-                  card <- cards[next_box]
-        if (card != k){
-          i <- i + 1
-          next_box <- card
-        } else {
-          successes <- successes + 1
-          prisoner_succeeded <- TRUE
-          }
-        } else{
-          i <- n + 1
-        }
-        
-      } 
+    next_box <- switch(strategy, k, sample(1:(2*n), 1), sample(1:(2*n), 1))
+    i <- 1
+    while (i <= n){
+      card <- switch(strategy, cards[next_box], cards[next_box], sample(1:(2*n), 1))
+      if (card != k){
+        next_box <- card
+        i <- i + 1
+      } else {
+        successes <- successes + 1
+        i <- n + 1
+      }
     }
-  
-  # for (j in 1 : nreps){
-  #   if (strategy == 2){
-  #     i <- 1
-  #     next_box <- sample(1 : (2 * n), 1)
-  #     while (i <= n){
-  #       card <- cards[next_box]
-  #       if (card != k){
-  #         i <- i + 1
-  #         next_box <- card
-  #       } else {
-  #         successes <- successes + 1
-  #         break
-  #       } 
-  #     } 
-  #   }
-  #   
-  #   if (strategy == 3){
-  #     i <- 1
-  #     next_box <- sample(1 : (2 * n), n, replace = FALSE)
-  #     while (i <= n){
-  #       card <- cards[next_box[i]]
-  #       if (card != k){
-  #         i <- i + 1
-  #       } else {
-  #         successes <- successes + 1
-  #         break
-  #       } 
-  #     } 
-  #   }
-  # }
   }
- return (successes / nreps)
+  return (successes / nreps)  
 }
-```
-
-```{r}
-
 ```
 
 ```{r}
