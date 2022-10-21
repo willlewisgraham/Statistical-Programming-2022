@@ -34,7 +34,7 @@ Pone <- function(n, k, strategy, nreps = 10000){
   for (j in 1 : nreps){
     i <- 1
     cards <- sample(1 : (2 * n), 2 * n, replace = FALSE)
-    next_box <- switch(strategy, k, sample(1 : (2 * n), 1), static_choices[i]) # Determine next box based on the input strategy
+    next_box <- switch(strategy, k, sample(1 : (2 * n), 1), static_choices[i]) # Determine next box based on the input strategy (using the switch statement)
     while (i <= n){
       card <- cards[next_box]
       if (card != k){
