@@ -11,8 +11,27 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 newt <- function(theta, func, grad, hess = NULL, ..., tol, fscale, maxit, max.half, eps){
-  # initialise random value of theta
-  # Check objective and derivatives are finite
+  
+  obj_at_theta <- func(theta)
+  grad_at_theta <- grad(theta)
+  if(is.null(hess)){
+    finite_diff_grad <- function(delta, x_grad, current_theta){
+      grad_diff <- grad(current_theta + delta/2) - grad(current_theta - delta/2)
+      grad_diff <- matrix(grad_diff, len(grad_diff))
+    }
+  }
+
+result <- lapply(test, FUN = func, divisor)
+  }
+  
+  hess_at_theta <- hess(theta)
+  inf <- c(Inf, -Inf)
+  
+  if(obj_at_theta %in% inf | grad_at_theta %in% inf){ # Check that the objective function is finite at theta
+    
+  } 
+    
+  
   
   # Check maxit
   # Save the value of D at theta (alpha)
