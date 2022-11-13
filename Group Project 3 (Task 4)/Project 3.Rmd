@@ -63,7 +63,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol, fscale, maxit, max.ha
     stop("Objective Funciton or Derivatives Not Finite at Initial Theta")
   }
 
-i = 1
+i = 1 # Tracks 
   while(i <= maxit){
     obj_at_theta <- func(theta)
     grad_at_theta <- grad(theta)
@@ -88,19 +88,20 @@ i = 1
   
     eig_hess <- eigen(hess_at_theta) ## Calculate eigen decomp on the hessian
       lambdas <- eig_hess$values
-      U <- 
+      
       if(min(lambdas) < 0){
-        pert_hess_at_theta <- hess_at_lambda + (-(min(lambda)) + 1)*   diag(len(hess_at_theta))
+        pert_hess_at_theta <- hess_at_theta + (-(min(lambda)) + 1)*   diag(length(hess_at_theta))
         
-        eig_pert_hess <- eigen(pert_hess_at_theta)
-        pert_lambdas <- eig_pert_hess$values
-        
-        return(pert_lambdas)
-      } 
+        eig_hess <- eigen(pert_hess_at_theta)
+        lambdas <- eig_hess$values
+      }  
+      U <- eig_hess$vectors
+      
       ### Check lambdas for positivity, if not, perturb hessian matrix and recalculate eigen decomp
       
-      inverse_hessian <- 1 /
+      inv_hess <- U %*% (1/diag(lambdas)) %*% t(U)
     ## Get inverse of hessian by taking reciprocal of lambda
+      
     ## Return theta that minimises the approximation funct
   
   # Set stepsize = theta hat - theta
