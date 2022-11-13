@@ -9,40 +9,97 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ```{r}
+hess_with_finite_differencing <- function(current_theta, grad){
+  # This function uses finite differencing to approximate the hessian matrix
+  # of an objective function with respect to a supplied parameter vector of 
+  # thetas. 
+  #
+  # Inputs:
+  # current_theta - a parameter vector that the hessian will be evaluated at
+  # grad - the gradient function. Returns the gradient vector of the objective
+  # w.r.t. the elements of parameter vector
+  # 
+  # Returns:
+  # a Hessian matrix approximated with finite differencing
+  
+  delta <- 1e-3 # use a static delta for finite differencing
+  
+  # Calculate differences in gradient function
+  grad_diff <- grad(current_theta + delta/2) - grad(current_theta - delta/2)
+  
+  # Repeat the gradient differences column m times, where m is the number of
+  # thetas. The resulting matrix is now of size mxm
+  grad_diff <- matrix(grad_diff, length(grad_diff), length(grad_diff))
+  
+  hess_approx <- grad_diff / delta # Approximate the Hessian matrix
+  
+  # Ensure Hessian approximation is symmetric
+  hess_approx <- (t(hess_approx) + hess_approx) / 2 
+  
+return(hess_approx)
+}
+
+```
+
+```{r}
+
 newt <- function(theta, func, grad, hess = NULL, ..., tol, fscale, maxit, max.half, eps){
   
-  obj_at_theta <- func(theta)
-  grad_at_theta <- grad(theta)
-  if(is.null(hess)){
-    finite_diff_grad <- function(delta, x_grad, current_theta){
-      grad_diff <- grad(current_theta + delta/2) - grad(current_theta - delta/2)
-      grad_diff <- matrix(grad_diff, len(grad_diff))
-    }
+  # if no hessian matrix function is supplied, default to finite differencing
+  if(is.null(hess)){ 
+    hess <- hess_with_finite_differencing
+  }
+  
+  obj_at_theta <- func(theta) # evaluate objective function at initial theta
+  grad_at_theta <- grad(theta) # evaluate gradient at initial theta
+  hess_at_theta <- hess(theta, grad) # evaluate hessian at inital theta
+
+  # combine obj, gradient, and hessian values at theta into 1 vector
+  obj_and_derivatives <- c(obj_at_theta, grad_at_theta, hess_at_theta)
+  
+  if (Inf %in% obj_and_derivatives | -Inf %in% obj_and_derivatives){
+    stop("Objective Funciton or Derivatives Not Finite at Initial Theta")
   }
 
-result <- lapply(test, FUN = func, divisor)
+i = 1
+  while(i <= maxit){
+    obj_at_theta <- func(theta)
+    grad_at_theta <- grad(theta)
+    hess_at_theta <- hess(theta, grad)
+    
+    if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
+      try(chol_of_hess <- chol(hess_at_theta), silent = TRUE)
+      if(all(class(chol_of_hess) == 'try-error')){
+        warning('Hessian is not positive definite at convergence.')
+      }
+      return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
+    }
   }
-  
-  hess_at_theta <- hess(theta)
-  inf <- c(Inf, -Inf)
-  
-  if(obj_at_theta %in% inf | grad_at_theta %in% inf){ # Check that the objective function is finite at theta
     
-  } 
-    
-  
-  
   # Check maxit
   # Save the value of D at theta (alpha)
-  # Calculate minimum of approximation function at theta
     ## Calculate the gradient and hessian matrix of the obj func
     ## Check if the gradient converged
       ### If yes:
         #### If hessian is not positive definite, give a warning, and retrun values
         #### If hessian is postive definite, return values
-    ## Calculate eigen decomp on the hessian
+  
+    eig_hess <- eigen(hess_at_theta) ## Calculate eigen decomp on the hessian
+      lambdas <- eig_hess$values
+      U <- 
+      if(min(lambdas) < 0){
+        pert_hess_at_theta <- hess_at_lambda + (-(min(lambda)) + 1)*   diag(len(hess_at_theta))
+        
+        eig_pert_hess <- eigen(pert_hess_at_theta)
+        pert_lambdas <- eig_pert_hess$values
+        
+        return(pert_lambdas)
+      } 
       ### Check lambdas for positivity, if not, perturb hessian matrix and recalculate eigen decomp
+      
+      inverse_hessian <- 1 /
     ## Get inverse of hessian by taking reciprocal of lambda
     ## Return theta that minimises the approximation funct
   
