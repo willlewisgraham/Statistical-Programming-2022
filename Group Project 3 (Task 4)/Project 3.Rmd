@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-hess_with_finite_differencing <- function(current_theta, grad){
+hess_with_finite_differencing <- function(current_theta, grad, eps){
   # This function uses finite differencing to approximate the hessian matrix
   # of an objective function with respect to a supplied parameter vector of 
   # thetas. 
@@ -24,7 +24,7 @@ hess_with_finite_differencing <- function(current_theta, grad){
   # Returns:
   # a Hessian matrix approximated with finite differencing
   
-  delta <- 1e-3 # use a static delta for finite differencing
+  delta <- eps # use a static delta for finite differencing
   
   # Calculate differences in gradient function
   grad_diff <- grad(current_theta + delta/2) - grad(current_theta - delta/2)
@@ -54,7 +54,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol, fscale, maxit, max.ha
   
   obj_at_theta <- func(theta) # evaluate objective function at initial theta
   grad_at_theta <- grad(theta) # evaluate gradient at initial theta
-  hess_at_theta <- hess(theta, grad) # evaluate hessian at inital theta
+  hess_at_theta <- hess(theta, grad, eps) # evaluate hessian at inital theta
 
   # combine obj, gradient, and hessian values at theta into 1 vector
   obj_and_derivatives <- c(obj_at_theta, grad_at_theta, hess_at_theta)
@@ -67,7 +67,7 @@ i = 1 # Tracks
   while(i <= maxit){
     obj_at_theta <- func(theta)
     grad_at_theta <- grad(theta)
-    hess_at_theta <- hess(theta, grad)
+    hess_at_theta <- hess(theta, grad, eps)
     
     if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
       try(chol_of_hess <- chol(hess_at_theta), silent = TRUE)
@@ -76,44 +76,40 @@ i = 1 # Tracks
       }
       return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
     }
-  }
-    
-  # Check maxit
-  # Save the value of D at theta (alpha)
-    ## Calculate the gradient and hessian matrix of the obj func
-    ## Check if the gradient converged
-      ### If yes:
-        #### If hessian is not positive definite, give a warning, and retrun values
-        #### If hessian is postive definite, return values
   
-    eig_hess <- eigen(hess_at_theta) ## Calculate eigen decomp on the hessian
-      lambdas <- eig_hess$values
+    eig_hess <- eigen(hess_at_theta) # Computes the eigen-decomposition on the     # hessian matrix.
+      lambdas <- eig_hess$values # Identifies the lambdas from the                # eigen-decomposition.
       
-      if(min(lambdas) < 0){
-        pert_hess_at_theta <- hess_at_theta + (-(min(lambda)) + 1)*   diag(length(hess_at_theta))
+      if(min(lambdas) < 0){ # If the smallest value of the lambdas is smaller       # than zero,
+        pert_hess_at_theta <- hess_at_theta + (-(min(lambda)) + 1)*   diag(length(hess_at_theta)) # perturb the hessian matrix.
         
-        eig_hess <- eigen(pert_hess_at_theta)
-        lambdas <- eig_hess$values
+        eig_hess <- eigen(pert_hess_at_theta) # Computes the 
+        # eigen-decomposition on the perturbed hessian matrix.
+        lambdas <- eig_hess$values # Identifies the lambdas from the                  # eigen-decomposition of the perturbed hessian matrix.
       }  
-      U <- eig_hess$vectors
+      U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
       
-      ### Check lambdas for positivity, if not, perturb hessian matrix and recalculate eigen decomp
+      inv_hess <- U %*% (1/diag(lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+  
+      descent_direction <- -inv_hess %*% grad_at_theta
+      stepsize <- 1
+      halves <- 0
+      theta_hat <- theta +  stepsize * descent_direction
       
-      inv_hess <- U %*% (1/diag(lambdas)) %*% t(U)
-    ## Get inverse of hessian by taking reciprocal of lambda
       
-    ## Return theta that minimises the approximation funct
+  while(obj_at_theta < func(theta_hat) && halves <= max.half){
+      stepsize <- stepsize / 2
+      theta_hat <- theta +  stepsize * descent_direction
+      halves <- halves + 1
+      
+  }
+  if(halves == (max.half + 1)){
+    stop("Maximum number of step halvings reached")
+  }
+  theta <- theta_hat
+  i <- i + 1
   
-  # Set stepsize = theta hat - theta
-  # Compare value of D at theta hat (beta) to alpha:
-    ## Case 1: alpha less than beta
-      ### try dividing stepsize by 2 until valid obj funct at theta:
-      ### set theta hat = theta + stepsize*0.5
-  # rerun this loop
-  # if runs max.half number of times without improving, stop
-  
-  
-  
+  }
 }
 
 ```
