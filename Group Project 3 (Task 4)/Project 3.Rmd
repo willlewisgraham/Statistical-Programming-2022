@@ -107,11 +107,11 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
     
     if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
       if(hess_is_pd){
-        return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = inv_hess))
+        return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
         
       }  
       warning('Hessian is not positive definite at convergence.')
-      return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
+      return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
       
     }
     
@@ -127,23 +127,35 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       stepsize <- stepsize / 2
       theta_hat <- theta +  stepsize * descent_direction
       halves <- halves + 1
-      
+      if (func(theta_hat) == -Inf){
+        warning("Optimal objective function value is negative infinity.")
+        return(list('f' = -Inf, 'theta' = original_theta, 'iter' = i, 'g' = "Undefined gradient.", 'Hi' = inv_hess))
+      }
     }
+    
+    
+    
+    
     if(halves == (max.half + 1)){
-      stop("Maximum number of step halvings reached")
+      warning("Maximum number of step halvings reached")
+      if(hess_is_pd){
+        return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
+      } else {
+        warning('Hessian is not positive definite at max iterations.')
+        return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
+      }
     }
     theta <- theta_hat
     i <- i + 1
     
   }
   warning("Maximum iterations reached without convergence")
-  ## CHECK FOR INVERSE HESSIAN
   
   if(hess_is_pd){
-    return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
+    return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = inv_hess))
   } else {
-    warning('Hessian is not positive definite at convergence.')
-    return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
+    warning('Hessian is not positive definite at max iterations.')
+    return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
   }
   
 }
@@ -167,7 +179,7 @@ hb <- function(th,k=2) {
 
 theta = c(10,10)
 
-test <- newt(theta, rb, gb, hb, 2)
+# test <- newt(theta, rb, gb, hb, 2)
 ```
 
 ```{r}
@@ -190,7 +202,14 @@ test <- newt(theta, rb, gb, hb, fscale = 0.5, maxit = 4)
 
 ```{r}
 debug(newt)
-newt(theta, rb, gb, hb, fscale = 0.5, maxit = 4)
+newt(theta, rb, gb, hb, 2)
 undebug(newt)
+```
+
+```{r}
+Rprof()
+newt(theta, rb, gb, hb, fscale = 0.5, maxit = 4)
+Rprof(NULL)
+summaryRprof()
 ```
 
