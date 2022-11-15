@@ -45,12 +45,12 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
 
 ```{r}
 
-newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, maxit = 100, max.half = 20, eps = 1e-6){
+newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   maxit = 100, max.half = 20, eps = 1e-6){
   
   # if no hessian matrix function is supplied, default to finite differencing
-  hess.supplied <- TRUE 
-  if(is.null(hess)){ 
-    hess.supplied <- FALSE
+  hess.supplied <- TRUE # Default to assume hessian is supplied
+  if(is.null(hess)){ # If hessian is not supplied
+    hess.supplied <- FALSE # 
   }
   
   obj_at_theta <- func(theta) # evaluate objective function at initial theta
@@ -88,7 +88,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
     lambdas <- eig_hess$values # Identifies the lambdas from the                # eigen-decomposition.
     
     if(all(class(chol_of_hess) == 'try-error')){
-      hess_has_inverse <- FALSE
+      hess_is_pd <- FALSE
       pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1) * diag(length(hess_at_theta)) # perturb the hessian matrix.
       
       eig_hess <- eigen(pert_hess_at_theta) # Computes the 
@@ -98,7 +98,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
       
       inv_hess <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
     } else {
-      hess_has_inverse <- TRUE
+      hess_is_pd <- TRUE
       
       U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
       
@@ -106,7 +106,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
     }
     
     if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
-      if(hess_has_inverse){
+      if(hess_is_pd){
         return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = inv_hess))
         
       }  
@@ -139,7 +139,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
   warning("Maximum iterations reached without convergence")
   ## CHECK FOR INVERSE HESSIAN
   
-  if(hess_has_inverse){
+  if(hess_is_pd){
     return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
   } else {
     warning('Hessian is not positive definite at convergence.')
