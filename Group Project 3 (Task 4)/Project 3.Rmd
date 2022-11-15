@@ -48,7 +48,7 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
 newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, maxit = 100, max.half = 20, eps = 1e-6){
   
   # if no hessian matrix function is supplied, default to finite differencing
-  hess.supplied <- TRUE
+  hess.supplied <- TRUE 
   if(is.null(hess)){ 
     hess.supplied <- FALSE
   }
@@ -70,8 +70,9 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
     stop("Objective Funciton or Derivatives Not Finite at Initial Theta")
   }
   
-  i <- 0 # Tracks the iterations. 
-  while(i < maxit){
+  i <- 1 # Tracks the iterations. 
+  while(i <= maxit){
+    original_theta <- theta
     obj_at_theta <- func(theta)
     grad_at_theta <- grad(theta)
     
@@ -81,30 +82,40 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
       hess_at_theta <- hess_with_finite_differencing(theta, grad, eps)
     }
     
-    
-    if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
-      chol_of_hess <- try(chol(hess_at_theta), silent = TRUE)
-      if(all(class(chol_of_hess) == 'try-error')){
-        warning('Hessian is not positive definite at convergence.')
-        return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
-        
-      }
-      return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
-    }
+    chol_of_hess <- try(chol(hess_at_theta), silent = TRUE)
     
     eig_hess <- eigen(hess_at_theta) # Computes the eigen-decomposition on the     # hessian matrix.
     lambdas <- eig_hess$values # Identifies the lambdas from the                # eigen-decomposition.
     
-    if(min(lambdas) <= 0){ # If the smallest value of the lambdas is smaller       # than zero,
-      pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1)*   diag(length(hess_at_theta)) # perturb the hessian matrix.
+    if(all(class(chol_of_hess) == 'try-error')){
+      hess_has_inverse <- FALSE
+      pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1) * diag(length(hess_at_theta)) # perturb the hessian matrix.
       
       eig_hess <- eigen(pert_hess_at_theta) # Computes the 
       # eigen-decomposition on the perturbed hessian matrix.
       lambdas <- eig_hess$values # Identifies the lambdas from the                  # eigen-decomposition of the perturbed hessian matrix.
-    }  
-    U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
+      U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
+      
+      inv_hess <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+    } else {
+      hess_has_inverse <- TRUE
+      
+      U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
+      
+      inv_hess <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+    }
     
-    inv_hess <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+    if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
+      if(hess_has_inverse){
+        return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = inv_hess))
+        
+      }  
+      warning('Hessian is not positive definite at convergence.')
+      return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
+      
+    }
+    
+    
     
     descent_direction <- -inv_hess %*% grad_at_theta
     stepsize <- 1
@@ -127,7 +138,14 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1, ma
   }
   warning("Maximum iterations reached without convergence")
   ## CHECK FOR INVERSE HESSIAN
-  return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
+  
+  if(hess_has_inverse){
+    return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
+  } else {
+    warning('Hessian is not positive definite at convergence.')
+    return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
+  }
+  
 }
 ```
 
@@ -155,14 +173,14 @@ test <- newt(theta, rb, gb, hb, 2)
 ```{r}
 rb <- function(th) {
   th
-
+  
 }
 gb <- function(th) {
   1
 }
 
 hb <- function(th) {
-0
+  0
 }
 
 theta = c(10)
