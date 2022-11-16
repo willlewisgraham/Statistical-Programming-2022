@@ -17,14 +17,6 @@ undebug(hess_with_finite_differencing)
 
 
 ```{r}
-eps <- 1e-3
-gt <- gb(c(10,10))
-gt_1 <- gb(c(10,10+eps))
-test <-  - gt[1] + gt_1[1]
-
-```
-
-```{r}
 hess_with_finite_differencing <- function(current_theta, grad, eps){
   # This function uses finite differencing to approximate the hessian matrix
   # of an objective function with respect to a supplied parameter vector of 
@@ -42,7 +34,7 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   
   hess <- matrix(0,p,p)
   
-    
+  
   for (i in 1:p){
     for (j in 1:i){
       change_vector <- matrix(0,p)
@@ -124,20 +116,16 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
     
     inv_hess <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
     
-    
-    if(sum(abs(grad_at_theta) < tol * abs(obj_at_theta) + fscale) == length(theta)){
+    if (all(abs(grad_at_theta) < tol*(abs(obj_at_theta) + fscale))){
       if(hess_is_pd){
         return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
-        
-      }  
+      } 
       warning('Hessian is not positive definite at convergence.\n')
       if(hess_is_inv){
         return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess_before_perturb))
       }
       return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
-      
     }
-    
     
     
     descent_direction <- as.vector(-inv_hess %*% grad_at_theta)
@@ -168,7 +156,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
     }
     theta <- theta_hat
     i <- i + 1
-   
+    
     
   }
   warning("Maximum iterations reached without convergence \n")
@@ -203,14 +191,14 @@ hb <- function(th,k=2) {
   h
 }
 
-theta = c(10,10)
 
-test <- newt(theta, rb, gb, k = 2, fscale = 0.5)
+theta = c(10,10)
+test <- newt(theta, rb, gb, hb, k=2)
 print(test)
 ```
 
 ```{r}
-## Linear function y = x
+## Linear function y = x, using finite differencing
 rb <- function(th) {
   th
   
@@ -236,7 +224,7 @@ rb <- function(th) {
   
 }
 gb <- function(th) {
-  c(2*th[1], 2*th[2])
+  c(th[1]*2, th[2]*2)
 }
 
 hb <- function(th) {

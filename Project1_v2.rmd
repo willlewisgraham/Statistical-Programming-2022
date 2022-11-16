@@ -1,0 +1,165 @@
+---
+title: "Project 1"
+author: "Will Graham; Richelle Lee; Robin Lin"
+date: '2022-09-29'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Ctrl + Shift + H: Set Working Directory
+
+```{r}
+a <- scan("pg10.txt",what="character",skip=104) ## skip contents
+n <- length(a)
+a <- a[-((n-2886):n)] ## strip license
+a <- a[-grep("[0123456789]:[0123456789]",a)] ## strip out verse numbers
+
+# a <- a[1:100] # test
+```
+
+A Function Splitting Punctuation Marks
+
+```{r}
+indexes_split_punct <- function(string){
+  ## Separating words with punctuation marks
+  indexes <- grep("[',','.','?','!',':',';']",a) ## obtain the indexes of words containing non-letter characters 
+  return(indexes)
+}
+
+get_punct <- function(r){
+  return(substr(r, nchar(r), nchar(r)))
+}
+
+split_punct <- function(b, test){
+  punct_indexes <- indexes_split_punct(b)
+  punct <- lapply(b[punct_indexes] , FUN = get_punct)
+  new_b <- rep(0, (length(punct_indexes) + length(b)))
+  final_punct_indexes <- punct_indexes + 1:length(punct_indexes)
+  new_b[final_punct_indexes] <- punct
+  no_punct_list <- gsub('[[:punct:] ]+','',b)
+  if (test == TRUE){
+    b <- b[1:100]
+    new_b <- new_b[1:115]
+  }
+  new_b[-final_punct_indexes] <- no_punct_list
+  return(new_b)
+}
+
+
+```
+
+```{r}
+#Lowering capitals
+new_b <- split_punct(a, FALSE)
+lower_new_b <- tolower(new_b)
+unique_words <- unique(lower_new_b)
+index_match <- match(lower_new_b, unique_words)
+tabulate_index_match <- tabulate(index_match)
+sort_results <- sort(tabulate_index_match, index.return = TRUE, decreasing = TRUE)
+top_500 <- sort_results$ix[1 : 500]
+result_list <- unique_words[top_500]
+```
+
+```{r}
+common_word_match <- match(lower_new_b, result_list)
+first_column <- common_word_match[1 : (length(common_word_match) - 2)]
+second_column <- first_column[2 : (length(common_word_match) - 1)]
+third_column <- first_column[3 : length(common_word_match)]
+T_array <- data.frame(first_column, second_column, third_column)
+
+T_array <- T_array[is.na(rowSums(T_array)) == FALSE,]
+
+
+Index_to_common_words <- function(x){
+  return(result_list[x])
+}
+matrix_x <- cbind(c(lapply(T_array$first_column, FUN = Index_to_common_words)), c(lapply(T_array$second_column, FUN = Index_to_common_words)), c(lapply(T_array$third_column, FUN = Index_to_common_words)))
+
+Inital_W_map <- unique(T_array$first_column)
+Intial_word_probability <- tabulate(match(T_array$first_column, unique(T_array$first_column)))
+Initail_prob <- Intial_word_probability/sum(Intial_word_probability)
+
+second_W_map <- unique(T_array[1:2])
+second_W_map_conc <- paste(second_W_map[[1]], second_W_map[[2]])
+T_array_conc <- paste(T_array[[1]], T_array[[2]])
+df2 <- data.frame(c(second_W_map_conc), rep(0, length(second_W_map_conc[[1]])))
+colnames(df2) <- c("Concat_w1_w2", "Freq")
+
+match_indexes <- match(T_array_conc, second_W_map_conc)
+tabulate_match_index <- tabulate(match_indexes)
+df2['Freq'] <- tabulate_match_index
+
+third_W_map <- unique(T_array[1:3])
+third_W_map_conc <- paste(third_W_map[[1]], third_W_map[[2]], third_W_map[[3]])
+T_array_conc2 <- paste(T_array[[1]], T_array[[2]], T_array[[3]])
+df3 <- data.frame(c(third_W_map_conc), rep(0, length(third_W_map_conc[[1]])))
+colnames(df3) <- c("Concat_w1_w2_w3", "Freq")
+
+match_indexes2 <- match(T_array_conc2, third_W_map_conc)
+tabulate_match_index2 <- tabulate(match_indexes2)
+df3['Freq'] <- tabulate_match_index2
+
+```
+
+```{r}
+PI <- grep("[',','.','?','!',':',';']", result_list)
+
+word_1 <- function(){
+  while (TRUE){
+    ret <- sample(Inital_W_map, 1, prob = Initail_prob)
+    if (!(ret %in% PI)) {
+      return(as.numeric(ret))
+    }
+  }
+}
+
+word_2 <- function(w1){
+  new_ops <- second_W_map[second_W_map[1] == w1,]
+  freq <- c(1:length(new_ops[[1]]))
+  for (i in c(1:length(new_ops[[1]]))){
+    freq[i] <- subset(df2, df2$Concat_w1_w2 == paste(new_ops[i,1], new_ops[i,2]), 2)[[1]]
+  }
+  sample_1 <- as.numeric(sample(as.numeric(as.character(as.factor(new_ops[,2]))), 1, prob = freq))
+  return(sample_1)
+}
+
+word_3 <- function(w1, w2){
+  new_ops <- third_W_map[third_W_map[1] == w1 & third_W_map[2] == w2,]
+  freq <- c(1:length(new_ops[[1]]))
+  for (i in c(1:length(new_ops[[1]]))){
+    freq[i] <- subset(df3, df3$Concat_w1_w2_w3 == paste(new_ops[i,1], new_ops[i,2], new_ops[i,3]),2)[[1]]
+  }
+  sample_1 <- as.numeric(sample(as.numeric(as.character(as.factor(new_ops[,3]))), 1, prob = freq))
+  return(sample_1)
+}
+```
+
+```{r}
+words_generator_50 <- function(){
+ sentence <- as.numeric(rep (0,50))
+ w1 <- word_1()
+ sentence[1] <- w1
+ w2 <- word_2(w1)
+ sentence[2] <- w2
+ 
+    for (i in c(3:length(sentence))){
+      sentence[i] <- try(word_3(sentence[i-2],sentence[i-1]), TRUE)
+      if (nchar(sentence[i] > 3))
+        {sentence[i] <- try(word_2(sentence[i-1]), TRUE)
+      if (nchar(sentence[i] > 3))
+        {sentence[i] <- word_1()}}
+  }
+
+sentence2 <- c(1:50)
+for (i in c(1:length(sentence2))){
+  sentence2[i] <- result_list[as.numeric(sentence[i])]
+  
+}
+  
+ return(sentence2)}
+
+```
+
