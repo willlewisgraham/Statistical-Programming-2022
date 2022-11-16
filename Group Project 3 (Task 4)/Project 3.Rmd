@@ -24,7 +24,6 @@ test <-  - gt[1] + gt_1[1]
 
 ```
 
-
 ```{r}
 hess_with_finite_differencing <- function(current_theta, grad, eps){
   # This function uses finite differencing to approximate the hessian matrix
@@ -39,8 +38,7 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   # Returns:
   # a Hessian matrix approximated with finite differencing
   
-  gradient_theta <- grad(current_theta)
-  p = length(gradient_theta)
+  p = length(current_theta)
   
   hess <- matrix(0,p,p)
   
@@ -48,8 +46,8 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   for (i in 1:p){
     for (j in 1:i){
       change_vector <- matrix(0,p)
-      change_vector[j] <- eps
-      hess[i,j] <-  (grad(theta + change_vector) - gradient_theta[i])[i]
+      change_vector[j] <- eps/2
+      hess[i,j] <-  (grad(theta + change_vector) - grad(theta - change_vector))[i]
     }
   }
   
@@ -59,7 +57,6 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   
   return(hess)
 }
-
 ```
 
 ```{r}
@@ -227,6 +224,26 @@ hb <- function(th) {
 }
 
 theta = c(10)
+
+test <- newt(theta, rb, gb, fscale = 0.5)
+print(test)
+```
+
+```{r}
+
+rb <- function(th) {
+  th[1]^2 + th[2]^2
+  
+}
+gb <- function(th) {
+  c(2*th[1], 2*th[2])
+}
+
+hb <- function(th) {
+  matrix(c(2,0,0,2),2,2)
+}
+
+theta = c(100, 1000)
 
 test <- newt(theta, rb, gb, fscale = 0.5)
 print(test)
