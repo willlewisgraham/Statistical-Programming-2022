@@ -46,60 +46,77 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
 ```{r}
 newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   maxit = 100, max.half = 20, eps = 1e-6){
   
-  # if no hessian matrix function is supplied, default to finite differencing
+  # If no hessian matrix function is supplied, default to finite differencing
   hess.supplied <- TRUE # Default to assume hessian is supplied
   if(is.null(hess)){ # If hessian is not supplied
-    hess.supplied <- FALSE # 
+    hess.supplied <- FALSE # Set hessian to not supplied
   }
   
-  obj_at_theta <- func(theta) # evaluate objective function at initial theta
-  grad_at_theta <- grad(theta) # evaluate gradient at initial theta
+  obj_at_theta <- func(theta) # Evaluate objective function at initial theta
+  grad_at_theta <- grad(theta) # Evaluate gradient at initial theta
   
-  if(hess.supplied){
+  if(hess.supplied){ # Checks whether hessian is supplied, if so,
     hess_at_theta <- hess(theta) # evaluate hessian at inital theta
-  } else {
+  } else { #otherwise,
+    # approximate hessian matrix by finite differencing
     hess_at_theta <- hess_with_finite_differencing(theta, grad, eps)
   }
   
-  # combine obj, gradient, and hessian values at theta into 1 vector
+  # Collate obj, gradient, and hessian values at intial theta into 1 vector,
   obj_and_derivatives <- c(obj_at_theta, grad_at_theta, hess_at_theta)
   
+  # and check that all values are finite.
+  # If not finite,
   if (Inf %in% obj_and_derivatives | -Inf %in% obj_and_derivatives){
+    # stop function.
     stop("Objective Funciton or Derivatives Not Finite at Initial Theta")
   }
   
-  i <- 0 # Tracks the iterations. 
-  while(i < maxit){
-    original_theta <- theta
-    obj_at_theta <- func(theta)
-    grad_at_theta <- grad(theta)
+  i <- 0 # Initialises the number of iterations to be 0. 
+  while(i < maxit){ # Tracks the number of iterations up to the maximum allowance.
+    original_theta <- theta # Creates a new variable passing the value of theta.
+    obj_at_theta <- func(theta) # Evaluates the corresponding function value at
+    # theta.
+    grad_at_theta <- grad(theta) # Evaluates the corresponding gradient value at
+    # theta. 
     
-    if(hess.supplied){
-      hess_at_theta <- hess(theta) # evaluate hessian at inital theta
-    } else {
+    # Reckon the Hessian.
+    if(hess.supplied){ # If a user specifies the Hessian matrix.
+      hess_at_theta <- hess(theta) # Evaluates the value at theta.
+    } else { # If the user doesn't specify it.
       hess_at_theta <- hess_with_finite_differencing(theta, grad, eps)
+      # Applys the finite differencing function, and evaluates the value at theta.
     }
     
-    chol_of_hess <- try(chol(hess_at_theta), silent = TRUE)
+    chol_of_hess <- try(chol(hess_at_theta), silent = TRUE) # Make a trial of 
+    # constructing Cholesky decomposition to the Hessian.
     
-    if(all(class(chol_of_hess) != 'try-error')){
-      hess_is_pd <- TRUE
-      hess_is_inv <- TRUE
-      inv_hess <- chol2inv(chol_of_hess)
-    } else {
-      hess_is_pd <- FALSE
-      eig_hess <- eigen(hess_at_theta) # Computes the eigen-decomposition on the     # hessian matrix.
-      lambdas <- eig_hess$values # Identifies the lambdas from the                # eigen-decomposition.
-      U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
-      if(0 %in% lambdas){
-        hess_is_inv <- FALSE
-      } else {
-        hess_is_inv <- TRUE
-        inv_hess_before_perturb <- U %*% (diag(1 / lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+    if(all(class(chol_of_hess) != 'try-error')){ # If the trial returns a numeric
+      # matrix.
+      hess_is_pd <- TRUE # Determines that the Hessian is positive definite.
+      hess_is_inv <- TRUE # Determines that the Hessian is invertible.
+      inv_hess <- chol2inv(chol_of_hess) # Reckons the inverse of Hessian from 
+      # Cholesky decomposition.
+    } else { # If the trial returns an error.
+      hess_is_pd <- FALSE # Determines that the Hessian is not positive definite. 
+      eig_hess <- eigen(hess_at_theta) # Computes the Eigen-decomposition on the        
+      # Hessian matrix.
+      lambdas <- eig_hess$values # Identifies the eigenvalue matrix of the
+      # Hessian.
+      U <- eig_hess$vectors # Identifies the matrix of eigenvectors of the Hessian 
+      # matrix or the perturbed Hessian matrix.
+      if(0 %in% lambdas){ # If there is an eigenvalue of 0.
+        hess_is_inv <- FALSE # Hessian is not invertible.
+      } else { # If all eigenvalues are non-zero.
+        hess_is_inv <- TRUE # Hessian is invertible.
+        inv_hess_before_perturb <- U %*% (diag(1 / lambdas)) %*% t(U) # Calculates
+        # the inverse of Hessian by Eigen-decomposition.
       }
-      pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1) * diag(dim(as.matrix(hess_at_theta))[1]) # perturb the hessian matrix.
-      inv_hess <- chol2inv(chol(pert_hess_at_theta)) # Calculates the inverse of       # the perturbed hessian matrix.
-    } 
+      pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1) * diag(dim(as.matrix(hess_at_theta))[1]) 
+      # Perturbs the Hessian.
+      inv_hess <- chol2inv(chol(pert_hess_at_theta)) 
+      # Calculates the inverse of the perturbed Hessian.
+    }  
     
     if (all(abs(grad_at_theta) < tol*(abs(obj_at_theta) + fscale))){
       if(hess_is_pd){
@@ -128,13 +145,13 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
     if(halves == (max.half + 1)){
       warning("Maximum number of step halvings reached \n")
       if(hess_is_pd){
-        return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
+        return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
       }  
       warning('Hessian is not positive definite at convergence.\n')
       if(hess_is_inv){
-        return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess_before_perturb))
+        return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess_before_perturb))
       }
-      return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
+      return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
     }
     
     theta <- theta_hat
