@@ -27,12 +27,11 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   
   hess <- matrix(0,p,p)
   
-  
-  for (i in 1:p){
-    for (j in 1:i){
+  for (i in 1 : p){
+    for (j in 1 : i){
       change_vector <- matrix(0,p)
       change_vector[j] <- eps / 2
-      hess[i,j] <-  (grad(theta + change_vector) - grad(theta - change_vector))[i]
+      hess[i,j] <-  (grad(current_theta + change_vector) - grad(current_theta - change_vector))[i]
     }
   }
   
@@ -45,7 +44,6 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
 ```
 
 ```{r}
-
 newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   maxit = 100, max.half = 20, eps = 1e-6){
   
   # if no hessian matrix function is supplied, default to finite differencing
@@ -62,7 +60,6 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
   } else {
     hess_at_theta <- hess_with_finite_differencing(theta, grad, eps)
   }
-  
   
   # combine obj, gradient, and hessian values at theta into 1 vector
   obj_and_derivatives <- c(obj_at_theta, grad_at_theta, hess_at_theta)
@@ -84,30 +81,25 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
     }
     
     chol_of_hess <- try(chol(hess_at_theta), silent = TRUE)
-    eig_hess <- eigen(hess_at_theta) # Computes the eigen-decomposition on the     # hessian matrix.
-    lambdas <- eig_hess$values # Identifies the lambdas from the                # eigen-decomposition.
-    U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
     
-    if(all(class(chol_of_hess) == 'try-error')){
+    if(all(class(chol_of_hess) != 'try-error')){
+      hess_is_pd <- TRUE
+      hess_is_inv <- TRUE
+      inv_hess <- chol2inv(chol_of_hess)
+    } else {
       hess_is_pd <- FALSE
+      eig_hess <- eigen(hess_at_theta) # Computes the eigen-decomposition on the     # hessian matrix.
+      lambdas <- eig_hess$values # Identifies the lambdas from the                # eigen-decomposition.
+      U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
       if(0 %in% lambdas){
         hess_is_inv <- FALSE
       } else {
         hess_is_inv <- TRUE
         inv_hess_before_perturb <- U %*% (diag(1 / lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
-      } 
+      }
       pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1) * diag(dim(as.matrix(hess_at_theta))[1]) # perturb the hessian matrix.
-      
-      eig_hess <- eigen(pert_hess_at_theta) # Computes the 
-      # eigen-decomposition on the perturbed hessian matrix.
-      lambdas <- eig_hess$values # Identifies the lambdas from the                  # eigen-decomposition of the perturbed hessian matrix.
-      U <- eig_hess$vectors # Identifies the U from the eigen-decomposition of       # the hessian matrix or the perturbed hessian matrix
-      
-    } else {
-      hess_is_pd <- TRUE
-    }
-    
-    inv_hess <- U %*% (diag(1 / lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+      inv_hess <- chol2inv(chol(pert_hess_at_theta)) # Calculates the inverse of       # the perturbed hessian matrix.
+    } 
     
     if (all(abs(grad_at_theta) < tol*(abs(obj_at_theta) + fscale))){
       if(hess_is_pd){
@@ -120,11 +112,10 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
     }
     
-    
     descent_direction <- as.vector(-inv_hess %*% grad_at_theta)
     stepsize <- 1
     halves <- 0
-    theta_hat <- theta +  stepsize * descent_direction
+    theta_hat <- theta + stepsize * descent_direction
     
     suppressWarnings(
       while((obj_at_theta < func(theta_hat) && halves <= max.half) | (!(is.finite(func(theta_hat))) && halves <= max.half)){
@@ -138,55 +129,49 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       warning("Maximum number of step halvings reached \n")
       if(hess_is_pd){
         return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess))
-        
       }  
       warning('Hessian is not positive definite at convergence.\n')
       if(hess_is_inv){
         return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = inv_hess_before_perturb))
       }
       return(list('f' = obj_at_theta, 'theta' = theta, 'iter' = i, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
-      
     }
+    
     theta <- theta_hat
     i <- i + 1
-    
-    
   }
-  warning("Maximum iterations reached without convergence \n")
   
+  warning("Maximum iterations reached without convergence \n")
   if(hess_is_pd){
     return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = inv_hess))
-    
   }  
   warning('Hessian is not positive definite at max iterations.\n')
   if(hess_is_inv){
     return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = inv_hess_before_perturb))
   }
   return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = maxit, 'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
-  
 }
 ```
 
 ```{r}
 ## Typical function with a minimum with no special attributes
-rb <- function(th,k=2) {
-  k*(th[2]-th[1]^2)^2 + (1-th[1])^2
+rb <- function(th,k = 2) {
+  k * (th[2] - th[1] ^ 2) ^ 2 + (1 - th[1]) ^ 2
 }
-gb <- function(th,k=2) {
-  c(-2*(1-th[1])-k*4*th[1]*(th[2]-th[1]^2),k*2*(th[2]-th[1]^2))
+gb <- function(th,k = 2) {
+  c(-2 * (1 - th[1]) - k * 4 * th[1] * (th[2] - th[1] ^ 2),k * 2 * (th[2] - th[1] ^ 2))
 }
 
-hb <- function(th,k=2) {
+hb <- function(th,k = 2) {
   h <- matrix(0,2,2)
-  h[1,1] <- 2-k*2*(2*(th[2]-th[1]^2) - 4*th[1]^2)
-  h[2,2] <- 2*k
-  h[1,2] <- h[2,1] <- -4*k*th[1]
+  h[1,1] <- 2 - k * 2 * (2 * (th[2] - th[1] ^ 2) - 4 * th[1] ^ 2)
+  h[2,2] <- 2 * k
+  h[1,2] <- h[2,1] <- -4 * k * th[1]
   h
 }
 
-
-theta = c(10,10)
-test <- newt(theta, rb, gb, hb, k=2)
+theta <- c(10,10)
+test <- newt(theta, rb, gb, k = 2)
 print(test)
 ```
 
@@ -194,7 +179,6 @@ print(test)
 ## Linear function y = x, using finite differencing
 rb <- function(th) {
   th
-  
 }
 gb <- function(th) {
   1
@@ -211,20 +195,19 @@ print(test)
 ```
 
 ```{r}
-
 rb <- function(th) {
-  th[1]^2 + th[2]^2
+  th[1] ^ 2 + th[2] ^ 2
   
 }
 gb <- function(th) {
-  c(th[1]*2, th[2]*2)
+  c(th[1] * 2, th[2] * 2)
 }
 
 hb <- function(th) {
   matrix(c(2,0,0,2),2,2)
 }
 
-theta = c(100, 1000)
+theta <- c(100, 1000)
 
 test <- newt(theta, rb, gb, fscale = 0.5)
 print(test)
