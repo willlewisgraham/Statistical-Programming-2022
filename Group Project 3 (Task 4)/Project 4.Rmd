@@ -101,7 +101,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       hess_is_pd <- FALSE # Determines that the Hessian is not positive definite. 
       eig_hess <- eigen(hess_at_theta) # Computes the Eigen-decomposition on the        
       # Hessian matrix.
-      lambdas <- eig_hess$values # Identifies the eigenvalue matrix of the
+      lambdas <- matrix(eig_hess$values) # Identifies the eigenvalue matrix of the
       # Hessian.
       U <- eig_hess$vectors # Identifies the matrix of eigenvectors of the Hessian 
       # matrix or the perturbed Hessian matrix.
