@@ -23,7 +23,7 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   # Returns:
   # a Hessian matrix approximated with finite differencing
   
-  p = length(current_theta)
+  p <- length(current_theta)
   
   hess <- matrix(0,p,p)
   
@@ -212,6 +212,7 @@ print(test)
 ```
 
 ```{r}
+## A function of a cone
 rb <- function(th) {
   th[1] ^ 2 + th[2] ^ 2
   
@@ -229,6 +230,11 @@ theta <- c(100, 1000)
 test <- newt(theta, rb, gb, fscale = 0.5)
 print(test)
 ```
+
+```{r}
+## Will's function reaching the limit of step halving.
+```
+
 
 ```{r}
 # debug(newt)
