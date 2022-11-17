@@ -1,5 +1,5 @@
 ---
-title: "Project 3"
+title: "Project 4"
 author: "Will Graham; Richelle Lee; Robin Lin"
 date: '`r Sys.Date()`'
 output: word_document
@@ -8,13 +8,6 @@ output: word_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-```{r}
-debug(hess_with_finite_differencing)
-hess_with_finite_differencing()
-undebug(hess_with_finite_differencing)
-```
-
 
 ```{r}
 hess_with_finite_differencing <- function(current_theta, grad, eps){
@@ -38,12 +31,12 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   for (i in 1:p){
     for (j in 1:i){
       change_vector <- matrix(0,p)
-      change_vector[j] <- eps/2
+      change_vector[j] <- eps / 2
       hess[i,j] <-  (grad(theta + change_vector) - grad(theta - change_vector))[i]
     }
   }
   
-  hess <- hess/eps
+  hess <- hess / eps
   
   hess[upper.tri(hess)] <- hess[lower.tri(hess)]
   
@@ -101,7 +94,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
         hess_is_inv <- FALSE
       } else {
         hess_is_inv <- TRUE
-        inv_hess_before_perturb <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+        inv_hess_before_perturb <- U %*% (diag(1 / lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
       } 
       pert_hess_at_theta <- hess_at_theta + (-(min(lambdas)) + 1) * diag(dim(as.matrix(hess_at_theta))[1]) # perturb the hessian matrix.
       
@@ -114,7 +107,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       hess_is_pd <- TRUE
     }
     
-    inv_hess <- U %*% (diag(1/lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
+    inv_hess <- U %*% (diag(1 / lambdas)) %*% t(U) # Calculates the inverse of       # the hessian matrix.
     
     if (all(abs(grad_at_theta) < tol*(abs(obj_at_theta) + fscale))){
       if(hess_is_pd){
@@ -238,15 +231,15 @@ print(test)
 ```
 
 ```{r}
-debug(newt)
-newt(theta, rb, gb)
-undebug(newt)
+# debug(newt)
+# newt(theta, rb, gb)
+# undebug(newt)
 ```
 
 ```{r}
-Rprof()
-newt(theta, rb, gb, hb, fscale = 0.5, maxit = 4)
-Rprof(NULL)
-summaryRprof()
+# Rprof()
+# newt(theta, rb, gb, hb, fscale = 0.5, maxit = 4)
+# Rprof(NULL)
+# summaryRprof()
 ```
 
