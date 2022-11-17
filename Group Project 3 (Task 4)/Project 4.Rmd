@@ -67,8 +67,8 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
   
   # and check that all values are finite.
   # If not finite,
-  if (Inf %in% obj_and_derivatives | -Inf %in% obj_and_derivatives){
-    # stop function.
+  
+  if (!all(is.finite(obj_and_derivatives)) ){
     stop("Objective Funciton or Derivatives Not Finite at Initial Theta")
   }
   
