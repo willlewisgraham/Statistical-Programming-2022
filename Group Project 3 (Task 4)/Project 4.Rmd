@@ -24,22 +24,19 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   # a Hessian matrix approximated with finite differencing
   
   p <- length(current_theta)
-  
   hess <- matrix(0,p,p)
   
-  for (i in 1 : p){
-    for (j in 1 : i){
-      change_vector <- matrix(0,p)
-      change_vector[j] <- eps / 2
-      hess[i,j] <-  (grad(current_theta + change_vector) - grad(current_theta - change_vector))[i]
-    }
+  
+  for (i in 1:p){
+    change_vector <- matrix(0,p)
+    change_vector[i] <- eps / 2
+    lower_grad <- grad(current_theta - change_vector)
+    upper_grad <- grad(current_theta + change_vector)
+    hess[i,] <- (upper_grad - lower_grad) / eps
   }
   
-  hess <- hess / eps
-  
-  hess[upper.tri(hess)] <- hess[lower.tri(hess)]
-  
   return(hess)
+  
 }
 ```
 
@@ -187,7 +184,7 @@ hb <- function(th,k = 2) {
   h
 }
 
-theta <- c(10,10)
+theta <- c(0,0)
 test <- newt(theta, rb, gb, k = 2)
 print(test)
 ```
