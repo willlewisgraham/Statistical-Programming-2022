@@ -98,7 +98,7 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       hess_is_pd <- FALSE # Determines that the Hessian is not positive definite. 
       eig_hess <- eigen(hess_at_theta) # Computes the Eigen-decomposition on the        
       # Hessian matrix.
-      lambdas <- matrix(eig_hess$values) # Identifies the eigenvalue matrix of the
+      lambdas <- eig_hess$values # Identifies the eigenvalue matrix of the
       # Hessian.
       U <- eig_hess$vectors # Identifies the matrix of eigenvectors of the Hessian 
       # matrix or the perturbed Hessian matrix.
@@ -184,7 +184,7 @@ hb <- function(th,k = 2) {
   h
 }
 
-theta <- c(0,0)
+theta <- c(0,10)
 test <- newt(theta, rb, gb, k = 2)
 print(test)
 ```
@@ -234,9 +234,9 @@ print(test)
 
 
 ```{r}
-# debug(newt)
-# newt(theta, rb, gb)
-# undebug(newt)
+debug(newt)
+newt(theta, rb, gb, k = 2)
+undebug(newt)
 ```
 
 ```{r}
