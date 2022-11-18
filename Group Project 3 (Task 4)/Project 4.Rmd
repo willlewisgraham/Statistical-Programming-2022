@@ -10,6 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+
+```
+
+
+```{r}
 hess_with_finite_differencing <- function(current_theta, grad, eps){
   # This function uses finite differencing to approximate the hessian matrix
   # of an objective function with respect to a supplied parameter vector of 
@@ -99,6 +104,9 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,   
       eig_hess <- eigen(hess_at_theta) # Computes the Eigen-decomposition on the        
       # Hessian matrix.
       lambdas <- eig_hess$values # Identifies the eigenvalue matrix of the
+      if (length(lambdas) == 1){
+        lambdas = matrix(lambdas)
+      }
       # Hessian.
       U <- eig_hess$vectors # Identifies the matrix of eigenvectors of the Hessian 
       # matrix or the perturbed Hessian matrix.
@@ -229,13 +237,28 @@ print(test)
 ```
 
 ```{r}
-## Will's function reaching the limit of step halving.
+rb <- function(th) {
+ sqrt(th)
+  
+}
+gb <- function(th) {
+  - 1 / th^2
+}
+
+hb <- function(th) {
+  2 / th^3
+}
+
+theta <- c(-1)
+
+test <- newt(theta, rb, gb, hb, fscale = 0.5)
+print(test)
 ```
 
 
 ```{r}
 debug(newt)
-newt(theta, rb, gb, k = 2)
+newt(theta, rb, gb, hb, fscale = 0.5)
 undebug(newt)
 ```
 
