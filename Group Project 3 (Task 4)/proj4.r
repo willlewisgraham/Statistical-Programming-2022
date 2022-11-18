@@ -1,12 +1,3 @@
----
-title: "Project 4"
-author: "Will Graham; Richelle Lee; Robin Lin"
-date: "`r Sys.Date()`"
-output:
-  word_document: default
----
-
-```{r}
 # Will Graham; Richelle Lee; Robin Lin
 # 2022-11-17
 # Github repository:
@@ -15,14 +6,6 @@ output:
 # Group Contributions:
 # Instead of splitting tasks between our group, we worked collaboratively on each step of the process.
 # Contributions were 1/3 per team member.
-```
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r}
 # Many statistical learning approaches rely on numerical optimization. This
 # code file is an implementation of Newton's method for function minimisation.
 #
@@ -33,11 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # minimise these quadratic functions (which can easily be done with closed form
 # solutions). These updated parameters constitute improved guesses of the true
 # optimal parameters for the objective function.
-
-```
-
-
-```{r}
 hess_with_finite_differencing <- function(current_theta, grad, eps){
   # This function uses finite differencing to approximate the hessian matrix
   # of an objective function with respect to a supplied parameter vector of 
@@ -70,9 +48,6 @@ hess_with_finite_differencing <- function(current_theta, grad, eps){
   return(hess)
   
 }
-```
-
-```{r}
 newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,  
                  maxit = 100, max.half = 20, eps = 1e-6){
   # This function applies Newton's ("newt") method for function minimisation.
@@ -312,5 +287,3 @@ newt <- function(theta, func, grad, hess = NULL, ..., tol = 1e-8, fscale = 1,
   return(list('f' = obj_at_theta, 'theta' = original_theta, 'iter' = maxit,
               'g' = grad_at_theta, 'Hi' = "Hessian is not invertible"))
 }
-```
-
